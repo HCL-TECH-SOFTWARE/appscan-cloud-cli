@@ -1,0 +1,162 @@
+<!--
+  ~ /**
+  ~  * @ Copyright HCL Technologies Ltd. 2023.
+  ~  * LICENSE: Apache License, Version 2.0 https://www.apache.org/licenses/LICENSE-2.0
+  ~  */
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.hcl.appscan</groupId>
+  <artifactId>AppscanCloudCLI</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>AppscanCloudCLI</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <asciidoctor.maven.plugin.version>2.2.4</asciidoctor.maven.plugin.version>
+    <asciidoctorj.pdf.version>2.3.9</asciidoctorj.pdf.version>
+    <asciidoctorj.version>2.5.10</asciidoctorj.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>4.7.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.hcl</groupId>
+      <artifactId>appscan.sdk</artifactId>
+      <version>1.0.36</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.4.8</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.fusesource.jansi/jansi -->
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>2.3.0.RELEASE</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.hcl.appscan.cli.handlers.AppscanCLIApp</mainClass>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>generateManPages</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <includeProjectDependencies>true</includeProjectDependencies>
+          <includePluginDependencies>true</includePluginDependencies>
+          <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
+          <arguments>
+            <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
+            <argument>com.hcl.appscan.cli.handlers.AppscanCLIApp</argument>
+          </arguments>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli-codegen</artifactId>
+            <version>4.7.4</version>
+            <type>jar</type>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.asciidoctor</groupId>
+        <artifactId>asciidoctor-maven-plugin</artifactId>
+        <version>2.2.4</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj-pdf</artifactId>
+            <version>${asciidoctorj.pdf.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>output-html</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <attributes>
+              <source-highlighter>rouge</source-highlighter>
+              <imagesdir>./images</imagesdir>
+              <toc>left</toc>
+              <icons>font</icons>
+              <sectanchors>true</sectanchors>
+              <idprefix/>
+              <idseparator>-</idseparator>
+              <docinfo1>true</docinfo1>
+              </attributes>
+              <backend>html5</backend>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-pdf-doc</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <backend>pdf</backend>
+              <outputDirectory>${project.build.directory}/generated-pdf-docs</outputDirectory>
+              <attributes>
+                <source-highlighter>rouge</source-highlighter>
+                <icons>font</icons>
+                <pagenums/>
+                <toc/>
+                <idprefix/>
+                <idseparator>-</idseparator>
+              </attributes>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

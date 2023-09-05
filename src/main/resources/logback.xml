@@ -1,0 +1,20 @@
+<!--
+  ~ /**
+  ~  * @ Copyright HCL Technologies Ltd. 2023.
+  ~  * LICENSE: Apache License, Version 2.0 https://www.apache.org/licenses/LICENSE-2.0
+  ~  */
+  -->
+
+<configuration>
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>
