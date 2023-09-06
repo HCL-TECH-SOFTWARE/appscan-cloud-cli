@@ -1,10 +1,3 @@
-<!--
-  ~ /**
-  ~  * @ Copyright HCL Technologies Ltd. 2023.
-  ~  * LICENSE: Apache License, Version 2.0 https://www.apache.org/licenses/LICENSE-2.0
-  ~  */
-  -->
-
 <configuration>
     <!-- Console Appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
