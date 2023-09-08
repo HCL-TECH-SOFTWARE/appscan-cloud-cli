@@ -278,6 +278,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
             if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) requestCounter++;
             else requestCounter = 0;
             m_scanStatus = provider.getStatus();
+            if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
+                m_scanStatus=SCAN_STATUS_COMPLETED;
+            }
             logger.info("Scan Status : {}" , m_scanStatus);
 
         }

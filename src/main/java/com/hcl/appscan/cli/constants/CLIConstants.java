@@ -21,10 +21,8 @@ package com.hcl.appscan.cli.constants;
 
 
 public interface CLIConstants {
-	
-	String GET_APPLICATIONS= "getApplications";
-	String INVOKE_DYNAMIC_SCAN="invokeDynamicScan";
-
 	String REPORT_SUFFIX = "_report";
+	String SCAN_STATUS_READY = "Ready";
+	String SCAN_STATUS_COMPLETED = "Completed";
 
 }
