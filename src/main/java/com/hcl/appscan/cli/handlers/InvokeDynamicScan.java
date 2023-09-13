@@ -273,10 +273,11 @@ public class InvokeDynamicScan implements Callable<Integer> {
         logger.info(messageBundle.getString("info.scan.progress"),scan.getName(),scan.getScanId());
         while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) && requestCounter < 10) {
 
-            Thread.sleep(5000);
+            Thread.sleep(30000);
 
             if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) requestCounter++;
             else requestCounter = 0;
+
             m_scanStatus = provider.getStatus();
             if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
                 m_scanStatus=SCAN_STATUS_COMPLETED;
