@@ -1,5 +1,5 @@
  # HCL Appscan Cloud CLI 📝  
-  The HCL Appscan command-line utility (CLI) is designed to streamline Dynamic Application Security Testing within a Continuous Integration and Continuous Deployment (CICD) environment. This versatile tool can be seamlessly integrated into any CICD platform or used independently.  
+  The HCL Appscan command-line utility (CLI) is designed to streamline Dynamic Application Security Testing within a Continuous Integration and Continuous Deployment (CICD) environment. This tool can be seamlessly integrated into any CICD platform or used independently.  
   
 ## Get Started 🚀  
 
