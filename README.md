@@ -162,4 +162,8 @@ Get list of presence id's from Appscan on Cloud
 ### help
 
 Display help information about the specified command.
+
+# License
+
+All files found in this project are licensed under the [Apache License 2.0](LICENSE).
   
