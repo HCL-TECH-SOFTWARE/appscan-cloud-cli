@@ -128,7 +128,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         target=url;
     }
-
+    
     public static boolean isValidURL(String urlStr) {
         try {
             URL url = new URL(urlStr);
@@ -145,7 +145,11 @@ public class InvokeDynamicScan implements Callable<Integer> {
     int failbuildif(@Option(names = {"--totalissuesgt", "-ti"}, description = "Fail build if total issues greater than", defaultValue = Integer.MAX_VALUE + "") int totalissuesgt, @Option(names = {"--highissuesgt", "-hi"}, description = "Fail build if high sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int highissuesgt, @Option(names = {"--medissuesgt", "-mi"}, description = "Fail build if medium sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int medissuesgt, @Option(names = {"--lowissuesgt", "-li"}, description = "Fail build if low sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int lowissuesgt, @Option(names = {"--criticalissuesgt", "-ci"}, description = "Fail build if critical sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int criticalissuesgt) {
 
         try{
-            waitForResults = true;
+            if(!waitForResults){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.waitforresults.withfailbuildif")));
+
+            }
             Optional<ScanResults> results = runScanAndGetResults();
             if (results.isPresent() && (results.get().getTotalFindings() > totalissuesgt || results.get().getCriticalCount() > criticalissuesgt ||
                     results.get().getHighCount() > highissuesgt || results.get().getMediumCount() > medissuesgt || results.get().getLowCount() > lowissuesgt )) {
@@ -156,12 +160,20 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 logger.info(messageBundle.getString("info.within.threshold"));
                 return 0;
             }
-        }catch (Exception e){
+        }catch (ParameterException ex){
+            logger.error(messageBundle.getString("error.invalid.waitforresults.withfailbuildif"));
+            return 10;
+        }
+        catch (Exception e){
             return 10;
         }
     }
     private int invokeDynamicScan(){
         try{
+            if(!waitForResults && failBuildNonCompliance){
+                logger.error(messageBundle.getString("error.invalid.waitforresults.withfailBuildNonCompliance"));
+                return 2;
+            }
             Optional<ScanResults> results =  runScanAndGetResults();
             if(failBuildNonCompliance && results.isPresent() && results.get().getTotalFindings()>0){
                 logger.error(messageBundle.getString("error.noncomplaint.issues"));
