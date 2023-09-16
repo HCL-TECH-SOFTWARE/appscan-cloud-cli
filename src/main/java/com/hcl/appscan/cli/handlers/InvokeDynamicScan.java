@@ -20,11 +20,14 @@ package com.hcl.appscan.cli.handlers;
 
 import com.hcl.appscan.cli.auth.CloudAuthenticationHandler;
 import com.hcl.appscan.cli.constants.ScannerConstants;
+import com.hcl.appscan.cli.exception.AbortException;
 import com.hcl.appscan.cli.results.ScanProgress;
 import com.hcl.appscan.cli.results.ScanResults;
 import com.hcl.appscan.cli.scanners.DynamicAnalyzer;
 import com.hcl.appscan.cli.scanners.Scanner;
 import com.hcl.appscan.sdk.CoreConstants;
+import com.hcl.appscan.sdk.error.InvalidTargetException;
+import com.hcl.appscan.sdk.error.ScannerException;
 import com.hcl.appscan.sdk.logging.IProgress;
 import com.hcl.appscan.sdk.logging.Message;
 import com.hcl.appscan.sdk.results.IResultsProvider;
@@ -40,6 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -71,7 +76,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private String appId;
     @Option(names = {"--scanName"}, description = "[Required] Specify a name to use for the scan. This value is used to distinguish this scan and its results from others.", required = true , order = 4)
     private String scanName;
-    @Option(names = {"--target"}, description = "[Required] Enter the URL from where you want the scan to start exploring the site.", required = true , order = 5)
     private String target;
 
     @Option(names = {"--scanType"}, defaultValue = "Production",description = "[Optional] Mention whether your site is a Staging site (under development) or a Production site (live and in use). Valid values : ${COMPLETION-CANDIDATES}", required = false , showDefaultValue = Visibility.ALWAYS , order = 6)
@@ -115,7 +119,24 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         scanFile = file;
     }
+    @Option(names = {"--target"}, description = "[Required] Enter the URL from where you want the scan to start exploring the site.", required = true , order = 5)
+    public void setTarget(String url){
+        boolean valid = isValidURL(url);
+        if(!valid){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.target"), url));
+        }
+        target=url;
+    }
 
+    public static boolean isValidURL(String urlStr) {
+        try {
+            URL url = new URL(urlStr);
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
     @Override
     public Integer call() {
        return invokeDynamicScan();
@@ -157,7 +178,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         try {
             authHandler.updateCredentials(key, secret);
         } catch (Exception e) {
-            logger.error("Error in Authentication : " + e.getMessage());
+            logger.error("Error in authenticating the request. Please check the credentials!");
             throw e;
         }
         Optional<ScanResults> results = Optional.empty();
@@ -195,6 +216,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
             } else {
                 logger.error(messageBundle.getString("error.invalid.scanresult"));
+                throw new AbortException(com.hcl.appscan.sdk.Messages.getMessage(ScanConstants.SCAN_FAILED, (" Scan Id: " + scan.getScanId() +
+                        ", Scan Name: " + scan.getName())));
+
             }
 
         } catch (Exception e) {
@@ -271,27 +295,36 @@ public class InvokeDynamicScan implements Callable<Integer> {
         int requestCounter = 0;
         logger.info(messageBundle.getString("info.wait.for.scan"));
         logger.info(messageBundle.getString("info.scan.progress"),scan.getName(),scan.getScanId());
-        while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) && requestCounter < 10) {
+        try{
+            while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)) && requestCounter < 10) {
 
-            Thread.sleep(30000);
+                Thread.sleep(30000);
 
-            if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) requestCounter++;
-            else requestCounter = 0;
+                if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) requestCounter++;
+                else requestCounter = 0;
 
-            m_scanStatus = provider.getStatus();
-            if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
-                m_scanStatus=SCAN_STATUS_COMPLETED;
+                m_scanStatus = provider.getStatus();
+                if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
+                    m_scanStatus=SCAN_STATUS_COMPLETED;
+                }
+                logger.info("Scan Status : {}" , m_scanStatus);
+
             }
-            logger.info("Scan Status : {}" , m_scanStatus);
-
+        }catch(InterruptedException e) {
+            throw new AbortException(messageBundle.getString("error.running.scan"));
         }
+
 
         if (CoreConstants.FAILED.equalsIgnoreCase(m_scanStatus)) {
             String message = com.hcl.appscan.sdk.Messages.getMessage(ScanConstants.SCAN_FAILED, " Scan Name: " + scan.getName());
+
             if (provider.getMessage() != null && provider.getMessage().trim().length() > 0) {
                 message += ", " + provider.getMessage();
             }
             logger.error(message);
+            logger.error(messageBundle.getString("error.scan.cancelled"),scan.getName());
+            throw new AbortException(com.hcl.appscan.sdk.Messages.getMessage(ScanConstants.SCAN_FAILED, (" Scan Id: " + scan.getScanId() +
+                    ", Scan Name: " + scan.getName())));
 
         } else if (CoreConstants.UNKNOWN.equalsIgnoreCase(m_scanStatus)) {
             progress.setStatus(new Message(Message.ERROR, messageBundle.getString("error.unexpected")));

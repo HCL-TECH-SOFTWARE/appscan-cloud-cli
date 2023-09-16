@@ -56,7 +56,7 @@ public class GetApplicationIds implements Callable<Integer> {
         try {
             authHandler.updateCredentials(key, secret);
         } catch (Exception e) {
-            logger.error("Error in Auth-handler" + e);
+            logger.error("Error in authenticating the request. Please check the credentials!");
             throw e;
         }
         try {
