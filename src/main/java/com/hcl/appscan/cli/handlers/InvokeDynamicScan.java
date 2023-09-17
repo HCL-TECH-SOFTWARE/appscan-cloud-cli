@@ -128,7 +128,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         target=url;
     }
-    
+
     public static boolean isValidURL(String urlStr) {
         try {
             URL url = new URL(urlStr);
@@ -145,6 +145,10 @@ public class InvokeDynamicScan implements Callable<Integer> {
     int failbuildif(@Option(names = {"--totalissuesgt", "-ti"}, description = "Fail build if total issues greater than", defaultValue = Integer.MAX_VALUE + "") int totalissuesgt, @Option(names = {"--highissuesgt", "-hi"}, description = "Fail build if high sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int highissuesgt, @Option(names = {"--medissuesgt", "-mi"}, description = "Fail build if medium sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int medissuesgt, @Option(names = {"--lowissuesgt", "-li"}, description = "Fail build if low sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int lowissuesgt, @Option(names = {"--criticalissuesgt", "-ci"}, description = "Fail build if critical sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int criticalissuesgt) {
 
         try{
+            if(totalissuesgt<0 || highissuesgt<0 || medissuesgt<0 || lowissuesgt<0 || criticalissuesgt<0 ){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.thresholdvalues")));
+            }
             if(!waitForResults){
                 throw new ParameterException(spec.commandLine(),
                         String.format(messageBundle.getString("error.invalid.waitforresults.withfailbuildif")));
@@ -161,7 +165,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 return 0;
             }
         }catch (ParameterException ex){
-            logger.error(messageBundle.getString("error.invalid.waitforresults.withfailbuildif"));
+            logger.error(ex.getMessage());
             return 10;
         }
         catch (Exception e){
