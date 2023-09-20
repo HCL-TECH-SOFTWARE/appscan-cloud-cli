@@ -154,6 +154,10 @@ public class InvokeDynamicScan implements Callable<Integer> {
                         String.format(messageBundle.getString("error.invalid.waitforresults.withfailbuildif")));
 
             }
+            if(failBuildNonCompliance){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.failbuildif.withfailBuildNonCompliance")));
+            }
             Optional<ScanResults> results = runScanAndGetResults();
             if (results.isPresent() && (results.get().getTotalFindings() > totalissuesgt || results.get().getCriticalCount() > criticalissuesgt ||
                     results.get().getHighCount() > highissuesgt || results.get().getMediumCount() > medissuesgt || results.get().getLowCount() > lowissuesgt )) {
