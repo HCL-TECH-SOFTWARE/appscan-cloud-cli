@@ -19,6 +19,7 @@
 package com.hcl.appscan.cli.handlers;
 
 
+import com.hcl.appscan.cli.exception.ShortErrorMessageHandler;
 import org.fusesource.jansi.AnsiConsole;
 import picocli.CommandLine;
 
@@ -46,6 +47,7 @@ public class AppscanCLIApp implements Runnable {
     public static void main(String[] args) {
         CommandLine commandLine = new CommandLine(new AppscanCLIApp());
         commandLine.setCaseInsensitiveEnumValuesAllowed(true);
+        commandLine.setParameterExceptionHandler(new ShortErrorMessageHandler());
         Help.ColorScheme colorScheme = createColorScheme();
         AnsiConsole.systemInstall();
         int exitCode = commandLine.setColorScheme(colorScheme).execute(args);

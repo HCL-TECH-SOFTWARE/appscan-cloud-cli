@@ -30,6 +30,7 @@ import com.hcl.appscan.sdk.error.InvalidTargetException;
 import com.hcl.appscan.sdk.error.ScannerException;
 import com.hcl.appscan.sdk.logging.IProgress;
 import com.hcl.appscan.sdk.logging.Message;
+import com.hcl.appscan.sdk.presence.CloudPresenceProvider;
 import com.hcl.appscan.sdk.results.IResultsProvider;
 import com.hcl.appscan.sdk.results.NonCompliantIssuesResultProvider;
 import com.hcl.appscan.sdk.scan.IScan;
@@ -137,6 +138,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             return false;
         }
     }
+
     @Override
     public Integer call() {
        return invokeDynamicScan();
@@ -144,10 +146,24 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Command(name = "failbuildif", description = "[Optional] A list of conditions that will fail the build. These conditions are logically \"OR\"'d together, so if one of the conditions is met, the build will fail.")
     int failbuildif(@Option(names = {"--totalissuesgt", "-ti"}, description = "Fail build if total issues greater than", defaultValue = Integer.MAX_VALUE + "") int totalissuesgt, @Option(names = {"--highissuesgt", "-hi"}, description = "Fail build if high sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int highissuesgt, @Option(names = {"--medissuesgt", "-mi"}, description = "Fail build if medium sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int medissuesgt, @Option(names = {"--lowissuesgt", "-li"}, description = "Fail build if low sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int lowissuesgt, @Option(names = {"--criticalissuesgt", "-ci"}, description = "Fail build if critical sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int criticalissuesgt) {
 
-        try{
+             StringBuilder thresholdErrMsg = new StringBuilder();
+             if(totalissuesgt<0){
+                 thresholdErrMsg.append(messageBundle.getString("error.invalid.totalissuesgt"));
+             }
+             if(highissuesgt<0){
+                 thresholdErrMsg.append(messageBundle.getString("error.invalid.highissuesgt"));
+             }
+            if(medissuesgt<0){
+                thresholdErrMsg.append(messageBundle.getString("error.invalid.medissuesgt"));
+             }
+            if(lowissuesgt<0){
+                thresholdErrMsg.append(messageBundle.getString("error.invalid.lowissuesgt"));
+             }
+            if(criticalissuesgt<0){
+                thresholdErrMsg.append(messageBundle.getString("error.invalid.criticalissuesgt"));
+            }
             if(totalissuesgt<0 || highissuesgt<0 || medissuesgt<0 || lowissuesgt<0 || criticalissuesgt<0 ){
-                throw new ParameterException(spec.commandLine(),
-                        String.format(messageBundle.getString("error.invalid.thresholdvalues")));
+                throw new ParameterException(spec.commandLine(),thresholdErrMsg.toString());
             }
             if(!waitForResults){
                 throw new ParameterException(spec.commandLine(),
@@ -158,6 +174,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 throw new ParameterException(spec.commandLine(),
                         String.format(messageBundle.getString("error.invalid.failbuildif.withfailBuildNonCompliance")));
             }
+        try{
             Optional<ScanResults> results = runScanAndGetResults();
             if (results.isPresent() && (results.get().getTotalFindings() > totalissuesgt || results.get().getCriticalCount() > criticalissuesgt ||
                     results.get().getHighCount() > highissuesgt || results.get().getMediumCount() > medissuesgt || results.get().getLowCount() > lowissuesgt )) {
@@ -168,9 +185,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 logger.info(messageBundle.getString("info.within.threshold"));
                 return 0;
             }
-        }catch (ParameterException ex){
-            logger.error(ex.getMessage());
-            return 10;
         }
         catch (Exception e){
             return 10;
@@ -200,6 +214,13 @@ public class InvokeDynamicScan implements Callable<Integer> {
         } catch (Exception e) {
             logger.error("Error in authenticating the request. Please check the credentials!");
             throw e;
+        }
+        if(presenceId!=null){
+            Map<String, String> presenceMap = getPresenceMap(authHandler);
+            if(!presenceMap.containsKey(presenceId)){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.presenceId")));
+            }
         }
         Optional<ScanResults> results = Optional.empty();
         try {
@@ -316,6 +337,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         logger.info(messageBundle.getString("info.wait.for.scan"));
         logger.info(messageBundle.getString("info.scan.progress"),scan.getName(),scan.getScanId());
         try{
+            IScanServiceProvider scanServiceProvider = scan.getServiceProvider();
             while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)) && requestCounter < 10) {
 
                 Thread.sleep(30000);
@@ -327,9 +349,16 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
                     m_scanStatus=SCAN_STATUS_COMPLETED;
                 }
-                logger.info("Scan Status : {}" , m_scanStatus);
-
+                JSONObject scanSummary = scanServiceProvider.getScanDetails(scan.getScanId());
+                JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
+                int duration = latestExecution.getInt("ExecutionDurationSec");
+                int minutes = duration / 60;
+                int remainingSeconds = duration % 60;
+                String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
+                System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration,
+                        latestExecution.getString("Progress"));
             }
+            System.out.println();
         }catch(InterruptedException e) {
             throw new AbortException(messageBundle.getString("error.running.scan"));
         }
@@ -376,6 +405,16 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 createdBy.getString("Email"),target,scanSummary.getString("TestOptimizationLevel"),
                 results.getScanServerUrl(),results.getTotalFindings(),results.getCriticalCount(),
                 results.getHighCount(),results.getMediumCount(),results.getLowCount(),results.getInfoCount());
+    }
+
+    public static Map<String, String> getPresenceMap(CloudAuthenticationHandler authHandler) throws Exception {
+        return new CloudPresenceProvider(authHandler).getPresences();
+    }
+
+    public static Map<String, String> getPresenceDetails(CloudAuthenticationHandler authHandler , String presenceId) throws Exception {
+        Map<String, String> presenceDetails =  new CloudPresenceProvider(authHandler).getDetails(presenceId);
+        System.out.println(presenceDetails);
+        return presenceDetails;
     }
 
 }
