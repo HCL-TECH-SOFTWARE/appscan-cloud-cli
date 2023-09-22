@@ -140,7 +140,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() {
+    public Integer call() throws Exception {
        return invokeDynamicScan();
     }
     @Command(name = "failbuildif", description = "[Optional] A list of conditions that will fail the build. These conditions are logically \"OR\"'d together, so if one of the conditions is met, the build will fail.")
@@ -190,8 +190,8 @@ public class InvokeDynamicScan implements Callable<Integer> {
             return 10;
         }
     }
-    private int invokeDynamicScan(){
-        try{
+    private int invokeDynamicScan() throws Exception{
+
             if(!waitForResults && failBuildNonCompliance){
                 logger.error(messageBundle.getString("error.invalid.waitforresults.withfailBuildNonCompliance"));
                 return 2;
@@ -201,9 +201,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 logger.error(messageBundle.getString("error.noncomplaint.issues"));
                 return 12;
             }
-        }catch (Exception e){
-            return 2;
-        }
         return 0;
     }
     private  Optional<ScanResults> runScanAndGetResults() throws Exception {
@@ -220,6 +217,12 @@ public class InvokeDynamicScan implements Callable<Integer> {
             if(!presenceMap.containsKey(presenceId)){
                 throw new ParameterException(spec.commandLine(),
                         String.format(messageBundle.getString("error.invalid.presenceId")));
+            }else{
+                Map<String, String> presenceDetails = getPresenceDetails(authHandler,presenceId);
+                if("Inactive".equalsIgnoreCase(presenceDetails.get("Status"))){
+                    throw new ParameterException(spec.commandLine(),
+                            String.format(messageBundle.getString("error.inactive.presenceId")));
+                }
             }
         }
         Optional<ScanResults> results = Optional.empty();
@@ -412,9 +415,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     }
 
     public static Map<String, String> getPresenceDetails(CloudAuthenticationHandler authHandler , String presenceId) throws Exception {
-        Map<String, String> presenceDetails =  new CloudPresenceProvider(authHandler).getDetails(presenceId);
-        System.out.println(presenceDetails);
-        return presenceDetails;
+        return new CloudPresenceProvider(authHandler).getDetails(presenceId);
     }
 
 }
