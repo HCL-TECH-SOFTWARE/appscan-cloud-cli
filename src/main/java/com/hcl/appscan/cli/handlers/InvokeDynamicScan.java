@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -83,17 +84,13 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private ScanType scanType;
     @Option(names = {"--optimization"}, defaultValue = "fast", description = "[Optional] You can reduce scan time by choosing a balance between speed and issue coverage. Valid values : ${COMPLETION-CANDIDATES}", required = false , showDefaultValue = Visibility.ALWAYS , order = 7)
     private Optimization optimization;
-    @Option(names = {"--emailNotification"}, defaultValue = "false", description = "[Optional] Send the user an email when analysis is complete. Valid values : true , false", required = false , showDefaultValue = Visibility.ALWAYS , order = 8)
     private Boolean emailNotification;
     @Option(names = {"--reportFormat"},defaultValue = "html",  description = "[Optional] Specify format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false , showDefaultValue = Visibility.ALWAYS , order = 9)
     private ReportFormat reportFormat;
-    @Option(names = {"--allowIntervention"},defaultValue = "false",  description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
     private Boolean allowIntervention;
     @Option(names = {"--presenceId"}, description = "[Optional] For sites not available on the internet, provide the ID of the AppScan Presence that can be used for the scan.", required = false ,order = 11)
     private String presenceId;
-    @Option(names = {"--waitForResults"},defaultValue = "true",  description = "[Optional] Suspend the job until the security analysis results are available.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 12)
     private Boolean waitForResults;
-    @Option(names = {"--failBuildNonCompliance"},defaultValue = "false",  description = "[Optional] Fail the job if one or more issues are found which are non compliant with respect to the selected application's policies.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 13)
     private Boolean failBuildNonCompliance;
     private  File scanFile;
     @Option(names = {"--loginType"},defaultValue = "None", description = "[Optional] Which Login method do you want to use? Type None if login not required. Type Automatic if you want to provide loginUser and password. Type Manual if you want to specify Login Sequence File. Valid values : ${COMPLETION-CANDIDATES} ", required = false ,showDefaultValue = Visibility.ALWAYS , order = 15)
@@ -138,7 +135,46 @@ public class InvokeDynamicScan implements Callable<Integer> {
             return false;
         }
     }
+    @Option(names = {"--failBuildNonCompliance"},defaultValue = "false",paramLabel = "BOOLEAN",  description = "[Optional] Fail the job if one or more issues are found which are non compliant with respect to the selected application's policies.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 13)
+    public void setFailBuildNonCompliance(String value) {
+        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
+        if (invalid) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.failBuildNonCompliance"), value));
+        }
+        failBuildNonCompliance = Boolean.getBoolean(value);
+    }
+    @Option(names = {"--waitForResults"},defaultValue = "true",  description = "[Optional] Suspend the job until the security analysis results are available.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 12)
+    public void setWaitForResults(String value) {
+        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
+
+        if (invalid) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.waitForResults"), value));
+        }
+        waitForResults = Boolean.getBoolean(value);
+    }
+    @Option(names = {"--allowIntervention"},defaultValue = "false",  description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
+    public void setAllowIntervention(String value) {
+        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
+
+        if (invalid) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.allowIntervention"), value));
+        }
+        allowIntervention = Boolean.getBoolean(value);
+    }
+    @Option(names = {"--emailNotification"}, defaultValue = "false", description = "[Optional] Send the user an email when analysis is complete. Valid values : true , false", required = false , showDefaultValue = Visibility.ALWAYS , order = 8)
+    public void setEmailNotification(String value) {
+        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
+
+        if (invalid) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.emailNotification"), value));
+        }
+        emailNotification = Boolean.getBoolean(value);
+    }
     @Override
     public Integer call() throws Exception {
        return invokeDynamicScan();
@@ -265,6 +301,14 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
             }
 
+        } catch(ScannerException se){
+            boolean isURLReachable = checkURL(target);
+            if(!isURLReachable){
+                throw new ParameterException(spec.commandLine(),
+                        "Please check if the target URL exists and reachable!");
+            }else{
+                logger.error(se.getMessage());
+            }
         } catch (Exception e) {
             logger.error(e.getMessage());
             throw e;
@@ -416,6 +460,24 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     public static Map<String, String> getPresenceDetails(CloudAuthenticationHandler authHandler , String presenceId) throws Exception {
         return new CloudPresenceProvider(authHandler).getDetails(presenceId);
+    }
+
+    public static boolean checkURL(String urlString) {
+        boolean isURLReachable = false;
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("HEAD");
+            int responseCode = connection.getResponseCode();
+
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                isURLReachable =  true;
+            }
+
+        } catch (Exception e) {
+
+        }
+        return isURLReachable;
     }
 
 }
