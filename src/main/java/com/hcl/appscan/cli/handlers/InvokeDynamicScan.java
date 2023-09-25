@@ -38,6 +38,7 @@ import com.hcl.appscan.sdk.scan.IScanFactory;
 import com.hcl.appscan.sdk.scan.IScanServiceProvider;
 import com.hcl.appscan.sdk.scanners.ScanConstants;
 import com.hcl.appscan.sdk.scanners.dynamic.DASTScanFactory;
+import com.hcl.appscan.sdk.utils.ServiceUtil;
 import com.hcl.appscan.sdk.utils.SystemUtil;
 import org.apache.wink.json4j.JSONObject;
 import org.slf4j.Logger;
@@ -143,17 +144,18 @@ public class InvokeDynamicScan implements Callable<Integer> {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.failBuildNonCompliance"), value));
         }
-        failBuildNonCompliance = Boolean.getBoolean(value);
+        failBuildNonCompliance = Boolean.parseBoolean(value);
     }
     @Option(names = {"--waitForResults"},defaultValue = "true",  description = "[Optional] Suspend the job until the security analysis results are available.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 12)
     public void setWaitForResults(String value) {
+
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
         if (invalid) {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.waitForResults"), value));
         }
-        waitForResults = Boolean.getBoolean(value);
+        waitForResults = Boolean.parseBoolean(value);
     }
     @Option(names = {"--allowIntervention"},defaultValue = "false",  description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
     public void setAllowIntervention(String value) {
@@ -163,7 +165,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.allowIntervention"), value));
         }
-        allowIntervention = Boolean.getBoolean(value);
+        allowIntervention = Boolean.parseBoolean(value);
     }
     @Option(names = {"--emailNotification"}, defaultValue = "false", description = "[Optional] Send the user an email when analysis is complete. Valid values : true , false", required = false , showDefaultValue = Visibility.ALWAYS , order = 8)
     public void setEmailNotification(String value) {
@@ -173,7 +175,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.emailNotification"), value));
         }
-        emailNotification = Boolean.getBoolean(value);
+        emailNotification = Boolean.parseBoolean(value);
     }
     @Override
     public Integer call() throws Exception {
@@ -261,6 +263,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 }
             }
         }
+
         Optional<ScanResults> results = Optional.empty();
         try {
             IProgress progress = new ScanProgress();
@@ -301,15 +304,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
             }
 
-        } catch(ScannerException se){
-            boolean isURLReachable = checkURL(target);
-            if(!isURLReachable){
-                throw new ParameterException(spec.commandLine(),
-                        "Please check if the target URL exists and reachable!");
-            }else{
-                logger.error(se.getMessage());
-            }
-        } catch (Exception e) {
+        }catch (Exception e) {
             logger.error(e.getMessage());
             throw e;
         }
@@ -460,24 +455,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     public static Map<String, String> getPresenceDetails(CloudAuthenticationHandler authHandler , String presenceId) throws Exception {
         return new CloudPresenceProvider(authHandler).getDetails(presenceId);
-    }
-
-    public static boolean checkURL(String urlString) {
-        boolean isURLReachable = false;
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("HEAD");
-            int responseCode = connection.getResponseCode();
-
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                isURLReachable =  true;
-            }
-
-        } catch (Exception e) {
-
-        }
-        return isURLReachable;
     }
 
 }
