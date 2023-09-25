@@ -212,6 +212,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 throw new ParameterException(spec.commandLine(),
                         String.format(messageBundle.getString("error.invalid.failbuildif.withfailBuildNonCompliance")));
             }
+
         try{
             Optional<ScanResults> results = runScanAndGetResults();
             if (results.isPresent() && (results.get().getTotalFindings() > totalissuesgt || results.get().getCriticalCount() > criticalissuesgt ||
@@ -234,11 +235,18 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 logger.error(messageBundle.getString("error.invalid.waitforresults.withfailBuildNonCompliance"));
                 return 2;
             }
-            Optional<ScanResults> results =  runScanAndGetResults();
-            if(failBuildNonCompliance && results.isPresent() && results.get().getTotalFindings()>0){
-                logger.error(messageBundle.getString("error.noncomplaint.issues"));
-                return 12;
+            try{
+                Optional<ScanResults> results =  runScanAndGetResults();
+                if(failBuildNonCompliance && results.isPresent() && results.get().getTotalFindings()>0){
+                    logger.error(messageBundle.getString("error.noncomplaint.issues"));
+                    return 12;
+                }
+            }catch (ParameterException pe){
+                throw pe;
+            }catch (Exception e){
+                return 10;
             }
+
         return 0;
     }
     private  Optional<ScanResults> runScanAndGetResults() throws Exception {
@@ -263,7 +271,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 }
             }
         }
-
         Optional<ScanResults> results = Optional.empty();
         try {
             IProgress progress = new ScanProgress();
