@@ -29,7 +29,7 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
 import static picocli.CommandLine.Help.Ansi.Style.italic;
 
 @Command(
-        name = "appscan",
+        name = "-",
         subcommands = {
                 GetApplicationIds.class,
                 InvokeDynamicScan.class,
@@ -41,7 +41,8 @@ import static picocli.CommandLine.Help.Ansi.Style.italic;
         header = "HCL AppScan CLI Utility to streamline Dynamic Application Security Testing.",
         description = "The HCL Appscan command-line utility (CLI) is designed to streamline Dynamic Application Security Testing within a Continuous Integration and Continuous Deployment (CICD) environment. This versatile tool can be seamlessly integrated into any CICD platform or used independently." ,
         optionListHeading = "%n@|bold,underline Options|@:%n" ,
-        descriptionHeading = "%n@|bold,underline Description|@:%n%n"
+        descriptionHeading = "%n@|bold,underline Description|@:%n%n",
+        footer = "Copyright 2023 HCL America, Inc."
 )
 public class AppscanCLIApp implements Runnable {
     public static void main(String[] args) {

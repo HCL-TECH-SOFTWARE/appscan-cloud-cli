@@ -29,7 +29,7 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.*;
 
 @Command(name = "getapplications" , sortOptions = false, mixinStandardHelpOptions = true , subcommands = {HelpCommand.class} ,
-        description ="Get list of applications from Appscan on Cloud"
+        description ="Get list of applications from Appscan on Cloud" , footer = "Copyright 2023 HCL America, Inc."
 )
 public class GetApplicationIds implements Callable<Integer> {
 

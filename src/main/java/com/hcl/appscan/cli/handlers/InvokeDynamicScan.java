@@ -63,7 +63,7 @@ enum LoginType { None , Automatic , Manual }
 @Command(name = "invokedynamicscan", sortOptions = false, mixinStandardHelpOptions = true, version = "1.0",
         description = "This Command is used to initiate the Dynamic Security Analysis Scan and seamlessly fetch the scan results upon the scan's completion. These results include identified issues, detailed reports, and corresponding report URLs. Additionally, the CLI can be configured with specific command line options to set failure conditions, enabling it to send a pass/fail signal to the pipeline accordingly" ,
         optionListHeading = "%n@|bold,underline Options|@:%n" , descriptionHeading = "%n@|bold,underline Description|@:%n%n",
-        subcommands = {HelpCommand.class})
+        subcommands = {HelpCommand.class} , footer = "Copyright 2023 HCL America, Inc.")
 public class InvokeDynamicScan implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(InvokeDynamicScan.class);
