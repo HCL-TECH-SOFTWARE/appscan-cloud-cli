@@ -164,6 +164,10 @@ Get list of presence id's from Appscan on Cloud
 
 Display help information about the specified command.
 
+### Note
+If a scanName contains special characters , it needs to be specified in double quotes. 
+For ex : --scanName="Test Rel" or --scanName="Test>Rel" etc
+
 ## License
 
 All files found in this project are licensed under the [Apache License 2.0](LICENSE).
