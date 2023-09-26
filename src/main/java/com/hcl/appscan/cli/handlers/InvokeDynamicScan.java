@@ -25,6 +25,7 @@ import com.hcl.appscan.cli.results.ScanProgress;
 import com.hcl.appscan.cli.results.ScanResults;
 import com.hcl.appscan.cli.scanners.DynamicAnalyzer;
 import com.hcl.appscan.cli.scanners.Scanner;
+import com.hcl.appscan.cli.scanners.ValidationUtil;
 import com.hcl.appscan.sdk.CoreConstants;
 import com.hcl.appscan.sdk.error.InvalidTargetException;
 import com.hcl.appscan.sdk.error.ScannerException;
@@ -269,6 +270,12 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     throw new ParameterException(spec.commandLine(),
                             String.format(messageBundle.getString("error.inactive.presenceId")));
                 }
+            }
+        }else{
+            boolean isValidURL = ValidationUtil.isValidUrl(target,authHandler);
+            if(!isValidURL){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.unreachable.target")));
             }
         }
         Optional<ScanResults> results = Optional.empty();
