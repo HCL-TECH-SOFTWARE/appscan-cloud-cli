@@ -147,7 +147,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         failBuildNonCompliance = Boolean.parseBoolean(value);
     }
-    @Option(names = {"--waitForResults"},defaultValue = "true",  description = "[Optional] Suspend the job until the security analysis results are available.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 12)
+    @Option(names = {"--waitForResults"},defaultValue = "true",  paramLabel = "BOOLEAN" , description = "[Optional] Suspend the job until the security analysis results are available.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 12)
     public void setWaitForResults(String value) {
 
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
@@ -158,7 +158,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         waitForResults = Boolean.parseBoolean(value);
     }
-    @Option(names = {"--allowIntervention"},defaultValue = "false",  description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
+    @Option(names = {"--allowIntervention"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
     public void setAllowIntervention(String value) {
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
@@ -168,7 +168,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         allowIntervention = Boolean.parseBoolean(value);
     }
-    @Option(names = {"--emailNotification"}, defaultValue = "false", description = "[Optional] Send the user an email when analysis is complete. Valid values : true , false", required = false , showDefaultValue = Visibility.ALWAYS , order = 8)
+    @Option(names = {"--emailNotification"}, defaultValue = "false", paramLabel = "BOOLEAN" , description = "[Optional] Send the user an email when analysis is complete. Valid values : true , false", required = false , showDefaultValue = Visibility.ALWAYS , order = 8)
     public void setEmailNotification(String value) {
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
@@ -405,17 +405,22 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
                     m_scanStatus=SCAN_STATUS_COMPLETED;
                 }
-                JSONObject scanSummary = scanServiceProvider.getScanDetails(scan.getScanId());
-                JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
-                int duration = latestExecution.getInt("ExecutionDurationSec");
-                int minutes = duration / 60;
-                int remainingSeconds = duration % 60;
-                String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
-                System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration,
-                        latestExecution.getString("Progress"));
+                if(!CoreConstants.FAILED.equalsIgnoreCase(m_scanStatus)){
+                    JSONObject scanSummary = scanServiceProvider.getScanDetails(scan.getScanId());
+                    if(null!=scanSummary){
+                        JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
+                        int duration = latestExecution.getInt("ExecutionDurationSec");
+                        int minutes = duration / 60;
+                        int remainingSeconds = duration % 60;
+                        String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
+                        System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration,
+                                latestExecution.getString("Progress"));
+                    }
+                }
+
             }
             System.out.println();
-        }catch(InterruptedException e) {
+        }catch(Exception e) {
             throw new AbortException(messageBundle.getString("error.running.scan"));
         }
 
@@ -426,7 +431,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
             if (provider.getMessage() != null && provider.getMessage().trim().length() > 0) {
                 message += ", " + provider.getMessage();
             }
-            logger.error(message);
             logger.error(messageBundle.getString("error.scan.cancelled"),scan.getName());
             throw new AbortException(com.hcl.appscan.sdk.Messages.getMessage(ScanConstants.SCAN_FAILED, (" Scan Id: " + scan.getScanId() +
                     ", Scan Name: " + scan.getName())));
