@@ -386,8 +386,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
         return sanitizedName + REPORT_SUFFIX + "." + provider.getResultsFormat().toLowerCase();
     }
 
+    // Using a regular expression to remove all special characters from a report Name except '_' and '-'
+    // This is required as some operating systems do not support certain special characters
     public static String sanitizeFileName(String input) {
-        // Using a regular expression to remove all characters from a report Name except '_' and '-'
         String regex = "[^A-Za-z0-9_-]";
         return input.replaceAll(regex, "");
     }
@@ -402,8 +403,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
         try{
             IScanServiceProvider scanServiceProvider = scan.getServiceProvider();
             while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)) && requestCounter < 10) {
-
-                Thread.sleep(30000);
 
                 m_scanStatus = provider.getStatus();
                 if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
@@ -429,6 +428,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     }
                 }
 
+                Thread.sleep(30000);
             }
             System.out.println();
         }catch(Exception e) {
