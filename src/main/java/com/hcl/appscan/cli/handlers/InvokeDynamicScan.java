@@ -403,13 +403,18 @@ public class InvokeDynamicScan implements Callable<Integer> {
         try{
             IScanServiceProvider scanServiceProvider = scan.getServiceProvider();
             while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)) && requestCounter < 10) {
-
-                m_scanStatus = provider.getStatus();
+                String asocServerUrl = authHandler.getServer();
+                boolean isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl);
+                if(!isASoCServerReachable){
+                    m_scanStatus = CoreConstants.UNKNOWN;
+                }else{
+                    m_scanStatus = provider.getStatus();
+                }
                 if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
                     m_scanStatus=SCAN_STATUS_COMPLETED;
                 }
                 if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) {
-                    System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus , "-" ,
+                    System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ] : Unable to reach AppScan on Cloud Server. Please check your network settings!", m_scanStatus , "-" ,
                             "-");
                     requestCounter++;
                 }
