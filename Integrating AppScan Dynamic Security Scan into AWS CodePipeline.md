@@ -11,8 +11,7 @@ operations.
 
 ✨ **Prerequisites** ✨
 
--   You need an account at the [HCL AppScan on
-    Cloud](https://cloud.appscan.com/AsoCUI/serviceui/home) service
+-   You need an account at the <a href="https://cloud.appscan.com/AsoCUI/serviceui/home" target="_blank">HCL AppScan on Cloud</a> service
     and an API Key and Secret for AppScan on Cloud Authentication. To
     generate an API key and secret credentials, refer to [Generating API
     Keys
