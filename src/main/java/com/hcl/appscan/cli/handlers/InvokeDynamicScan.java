@@ -349,6 +349,8 @@ public class InvokeDynamicScan implements Callable<Integer> {
         if (System.getenv().containsKey("CODEBUILD_CI") && System.getenv("CODEBUILD_CI").equals("true")) {
             logger.info("Detected ClientType : AWS CodeBuild CLI");
             properties.put(CLIENT_TYPE, "AWS CodeBuild CLI");
+        }else{
+            properties.put(CLIENT_TYPE, "AppScan Cloud CLI");
         }
 
         return properties;
