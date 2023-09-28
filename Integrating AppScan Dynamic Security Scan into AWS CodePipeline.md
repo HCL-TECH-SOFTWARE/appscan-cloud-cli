@@ -191,6 +191,15 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
     
 ![Scan Summary Logs](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/319256dd-8ba7-4f6c-8367-cf32d06ff8d1)
 
+5. The Scan Report would be available to download in format specified using --reportFormat or HTML format by default. This report includes only the non-compliant issues.
+   The Artifacts location can be configured in CodeBuild Project as discussed in earlier steps.
+    ![Artifacts Location](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/91879e11-278c-4f02-8863-ded178987a2f)
+  
+   ![Security Report](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/3f2c3a76-9525-41d2-a87f-4428794de869)
+
+Note: The scan report and summary are available only if --waitForResult is set to true in appscan cloud cli command while confuring buildspec in CodeBuild. --waitForResult is by default set to true.
+The report and summary otherwise are available for download from HCL AppScan on Cloud.
+   
 ✨ **Conclusion** ✨
 
 You have successfully configured AWS CodeBuild to include dynamic
