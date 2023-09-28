@@ -62,10 +62,15 @@ scan as part of the build process.
         **Image -
         aws/codebuild/amazonlinux2-x86_64-standard:corretto11**
 
+        ![Env AWS Codebuild](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/a5698a0f-0130-4c1a-b5dd-d83afe21038c)
+
+
     -   **Buildspec**: Choose \"Use a buildspec file\" and select the
         source location of your buildspec file (usually
         **buildspec.yml**). Alternatively, you can select "Insert build
         commands" and add the build commands in the onscreen editor.
+
+        ![Buildspec Options](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/53f4cded-dbdf-4c05-b753-5ff67f65f21f)
 
 > **Example buildspec** --
 ~~~
@@ -96,20 +101,31 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
     Example, you can store the scan report in the Amazon S3 Bucket of
     your preference and mention the path as "AppscanReports" and the
     Namespace type as Build ID.
+    
+![Codebuild Artifacts Configuration](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/6d81d975-58b6-45fc-9463-ee3c41a9e115)
 
-5.  **Logs**: Choose the desired CloudWatch settings for your build
+
+6.  **Logs**: Choose the desired CloudWatch settings for your build
     logs.
 
-6.  **Service role**: If you don\'t have a service role, create a new
+    ![Configure Codebuild logs](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/b3792a73-efb1-4223-8c6c-2ee224cc6760)
+
+
+8.  **Service role**: If you don\'t have a service role, create a new
     one or use an existing one with the necessary permissions.
 
-7.  **VPC**: Configure VPC settings if needed for your application.
+9.  **VPC**: Configure VPC settings if needed for your application.
 
-8.  **Timeouts**: Set appropriate timeouts for your build phases.
+10.  **Timeouts**: Set appropriate timeouts for your build phases. You can specify a timeout value anywhere from 5 minutes to 8 hours.
+     If you leave the hours and minutes fields blank, CodeBuild will default to a timeout of 60 minutes.
+     It is recommended to carefully consider the nature of your builds and select a timeout that aligns with their expected duration.
 
-9.  **Build badge**: Configure a build badge if desired.
+ ![Codebuild Timeout Configuration](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/71288185-4710-451c-a4cb-b85a2bd5f079)
 
-10. To create the CodeBuild project, click on **Create build project**.
+
+12.  **Build badge**: Configure a build badge if desired.
+
+13. To create the CodeBuild project, click on **Create build project**.
 
 **Step 2: Test CodeBuild Configuration:**
 
@@ -155,14 +171,20 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
     -   Enter a name for the stage (e.g.,
         \"**Dynamic_Security_Analysis**\").
 
+         ![CodePipeline Add Stage](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/978b1c07-12b7-40d2-bd1b-0c6007078c88)
+
     -   Click on **Add action group** and choose \"AWS CodeBuild\" as
         the provider.
 
+  
 7.  **Configure build action**:
 
     -   Choose the CodeBuild project you created earlier (Part 1) step.
 
     -   Set the appropriate action settings, including input artifacts.
+  
+      ![CodePipeline Add Action](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/a8c63452-87bb-4041-b847-d0045d215d9b)
+
 
 8.  **Artifact stage** (Optional):
 
@@ -193,8 +215,9 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
 
 5. The Scan Report would be available to download in format specified using --reportFormat or HTML format by default. This report includes only the non-compliant issues.
    The Artifacts location can be configured in CodeBuild Project as discussed in earlier steps.
+   
     ![Artifacts Location](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/91879e11-278c-4f02-8863-ded178987a2f)
-  
+
    ![Security Report](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/3f2c3a76-9525-41d2-a87f-4428794de869)
 
 Note: The scan report and summary are available only if --waitForResult is set to true in appscan cloud cli command while confuring buildspec in CodeBuild. --waitForResult is by default set to true.
