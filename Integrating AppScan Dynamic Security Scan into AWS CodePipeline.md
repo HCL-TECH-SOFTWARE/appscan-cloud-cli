@@ -185,6 +185,11 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
 
 3.  Verify that the CodeBuild stage runs your CLI tool and performs the
     dynamic security scan as part of the build process.
+    
+4. Upon successful completion of the scan , the build logs in AWS CodeBuild would contain scan details ,
+   Scan Result Findings Summary and other logs generated as part of the process.
+    
+![Scan Summary Logs](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/319256dd-8ba7-4f6c-8367-cf32d06ff8d1)
 
 ✨ **Conclusion** ✨
 
