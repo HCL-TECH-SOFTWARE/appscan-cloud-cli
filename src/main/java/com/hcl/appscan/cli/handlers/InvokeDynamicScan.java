@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -401,10 +402,14 @@ public class InvokeDynamicScan implements Callable<Integer> {
         return m_scanner;
     }
 
-    public File getReport(IResultsProvider provider, ScanResults results) {
-        File report = new File(messageBundle.getString("report.download.location"), getReportName(provider, results));
+    public File getReport(IResultsProvider provider, ScanResults results) throws IOException {
 
-        if (!report.isFile()) provider.getResultsFile(report, null);
+        File report = new File("AppscanReports", getReportName(provider, results));
+
+        if( report.getCanonicalPath().startsWith("AppscanReports")){
+            if (!report.isFile()) provider.getResultsFile(report, null);
+        }
+
         return report;
     }
 
