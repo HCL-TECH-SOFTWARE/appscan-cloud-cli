@@ -33,6 +33,8 @@ operations.
 
 -   Access to the AppScan CLI Tool Binary hosted on Maven Central.
 
+-   Java 11 or later should be available in AWS Codebuild environment.
+
 ✨ **Integrating Dynamic Security Scan into AWS CodeBuild and
 CodePipeline** ✨
 
