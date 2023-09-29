@@ -39,6 +39,7 @@ import com.hcl.appscan.sdk.scan.IScanFactory;
 import com.hcl.appscan.sdk.scan.IScanServiceProvider;
 import com.hcl.appscan.sdk.scanners.ScanConstants;
 import com.hcl.appscan.sdk.scanners.dynamic.DASTScanFactory;
+import com.hcl.appscan.sdk.utils.FileUtil;
 import com.hcl.appscan.sdk.utils.ServiceUtil;
 import com.hcl.appscan.sdk.utils.SystemUtil;
 import org.apache.wink.json4j.JSONObject;
@@ -102,8 +103,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private String loginUser;
     @Option(names = {"--loginPassword"}, description = "[Optional] If your app requires login, enter valid user credentials so that Application Security on Cloud can log in to the site.", required = false , order = 17)
     private String loginPassword;
-    @Option(names = {"--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
-    private  String trafficFile;
+    private File trafficFile;
 
     @Option(names = {"--scanFile"},  description = "[Optional] The path to a scan template file (.scan or .scant).", required = false ,showDefaultValue = Visibility.ALWAYS , order = 14)
     public void setScanFile(File file) {
@@ -178,6 +178,25 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         emailNotification = Boolean.parseBoolean(value);
     }
+
+    @Option(names = {"--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
+    public void setTrafficFile(File file) {
+
+        if (RECORDED.equalsIgnoreCase(String.valueOf(loginType))) {
+            if(null==file){
+                throw new ParameterException(spec.commandLine(), messageBundle.getString("error.trafficfile.required"));
+            }
+            else if (!file.isFile()) {
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.filepath"), file.getAbsolutePath()));
+            }else if ((!((file.getAbsolutePath()).toLowerCase().endsWith(TEMPLATE_EXTENSION3)))){
+                throw new ParameterException(spec.commandLine(), messageBundle.getString("error.invalid.traficfile"));
+            }
+        }
+
+        trafficFile = file;
+    }
+
     @Override
     public Integer call() throws Exception {
        return invokeDynamicScan();
@@ -185,6 +204,10 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Command(name = "failbuildif", description = "[Optional] A list of conditions that will fail the build. These conditions are logically \"OR\"'d together, so if one of the conditions is met, the build will fail.")
     int failbuildif(@Option(names = {"--totalissuesgt", "-ti"}, description = "Fail build if total issues greater than", defaultValue = Integer.MAX_VALUE + "") int totalissuesgt, @Option(names = {"--highissuesgt", "-hi"}, description = "Fail build if high sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int highissuesgt, @Option(names = {"--medissuesgt", "-mi"}, description = "Fail build if medium sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int medissuesgt, @Option(names = {"--lowissuesgt", "-li"}, description = "Fail build if low sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int lowissuesgt, @Option(names = {"--criticalissuesgt", "-ci"}, description = "Fail build if critical sev issues greater than", defaultValue = Integer.MAX_VALUE + "") int criticalissuesgt) {
 
+            if(totalissuesgt==Integer.MAX_VALUE && highissuesgt==Integer.MAX_VALUE && medissuesgt==Integer.MAX_VALUE && lowissuesgt==Integer.MAX_VALUE && criticalissuesgt==Integer.MAX_VALUE){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.failbuildif.nothresholdspecified")));
+              }
              StringBuilder thresholdErrMsg = new StringBuilder();
              if(totalissuesgt<0){
                  thresholdErrMsg.append(messageBundle.getString("error.invalid.totalissuesgt"));
@@ -213,6 +236,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 throw new ParameterException(spec.commandLine(),
                         String.format(messageBundle.getString("error.invalid.failbuildif.withfailBuildNonCompliance")));
             }
+
 
         try{
             Optional<ScanResults> results = runScanAndGetResults();
@@ -256,7 +280,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         try {
             authHandler.updateCredentials(key, secret);
         } catch (Exception e) {
-            logger.error("Error in authenticating the request. Please check the credentials!");
+            logger.error(messageBundle.getString("error.invalid.credentials"));
             throw e;
         }
         if(presenceId!=null){
@@ -366,7 +390,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
             m_scanner.setLoginPassword(loginPassword);
         } else if(loginType.equals(LoginType.Manual)){
              m_scanner.setLoginType(RECORDED);
-             m_scanner.setTrafficFile(trafficFile);
+             if(trafficFile!=null){
+                 m_scanner.setTrafficFile(trafficFile.getAbsolutePath());
+             }
         } else{
             m_scanner.setLoginType(NONE);
         }
