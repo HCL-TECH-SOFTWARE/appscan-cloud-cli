@@ -27,8 +27,10 @@ import org.apache.wink.json4j.JSONException;
 import org.apache.wink.json4j.JSONObject;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.util.Map;
+import java.net.URL;
 
 /**
  * Provides scan service utilities.
@@ -77,6 +79,25 @@ public class ValidationUtil implements CoreConstants {
 			// Ignore and return false.
 		}
 		
+		return false;
+	}
+
+	public static boolean checkASoCConnectivity(String urlString) {
+		try {
+			URL url = new URL(urlString);
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod("HEAD"); // Using the HEAD request method for a faster check
+			int responseCode = connection.getResponseCode();
+
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				return true;
+			} else {
+				return false;
+			}
+
+		} catch (Exception e) {
+			// Ignore and return false.
+		}
 		return false;
 	}
 }

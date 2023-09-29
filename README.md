@@ -8,6 +8,7 @@
 - Create an application on the service to associate with your scans.
 - A Target website URL to perform a dynamic scan on.
 - Access to the AppScan CLI Tool Binary hosted on Maven Central.
+- Java 11 or later should be installed.
 
 ## CLI Tool Usage Manual  ✨
 

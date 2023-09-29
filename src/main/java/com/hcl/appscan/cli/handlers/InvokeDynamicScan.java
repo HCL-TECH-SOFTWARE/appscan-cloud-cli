@@ -349,6 +349,8 @@ public class InvokeDynamicScan implements Callable<Integer> {
         if (System.getenv().containsKey("CODEBUILD_CI") && System.getenv("CODEBUILD_CI").equals("true")) {
             logger.info("Detected ClientType : AWS CodeBuild CLI");
             properties.put(CLIENT_TYPE, "AWS CodeBuild CLI");
+        }else{
+            properties.put(CLIENT_TYPE, "AppScan Cloud CLI");
         }
 
         return properties;
@@ -381,8 +383,16 @@ public class InvokeDynamicScan implements Callable<Integer> {
     }
 
     private String getReportName(IResultsProvider provider, ScanResults results) {
-        String name = (provider.getType() + results.getName()).replaceAll(" ", "");
-        return name + REPORT_SUFFIX + "." + provider.getResultsFormat().toLowerCase();
+        String name = (provider.getType() + results.getName());
+        String sanitizedName = sanitizeFileName(name);
+        return sanitizedName + REPORT_SUFFIX + "." + provider.getResultsFormat().toLowerCase();
+    }
+
+    // Using a regular expression to remove all special characters from a report Name except '_' and '-'
+    // This is required as some operating systems do not support certain special characters
+    public static String sanitizeFileName(String input) {
+        String regex = "[^A-Za-z0-9_-]";
+        return input.replaceAll(regex, "");
     }
 
     private Optional<ScanResults> getScanResults(IScan scan, IProgress progress, CloudAuthenticationHandler authHandler, IResultsProvider provider) throws Exception {
@@ -395,17 +405,24 @@ public class InvokeDynamicScan implements Callable<Integer> {
         try{
             IScanServiceProvider scanServiceProvider = scan.getServiceProvider();
             while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)) && requestCounter < 10) {
-
-                Thread.sleep(30000);
-
-                if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) requestCounter++;
-                else requestCounter = 0;
-
-                m_scanStatus = provider.getStatus();
+                String asocServerUrl = authHandler.getServer();
+                boolean isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl);
+                if(!isASoCServerReachable){
+                    m_scanStatus = CoreConstants.UNKNOWN;
+                }else{
+                    m_scanStatus = provider.getStatus();
+                }
                 if(SCAN_STATUS_READY.equalsIgnoreCase(m_scanStatus)){
                     m_scanStatus=SCAN_STATUS_COMPLETED;
                 }
-                if(!CoreConstants.FAILED.equalsIgnoreCase(m_scanStatus)){
+                if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) {
+                    System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ] : Unable to reach AppScan on Cloud Server. Please check your network settings!", m_scanStatus , "-" ,
+                            "-");
+                    requestCounter++;
+                }
+                else requestCounter = 0;
+
+                if(!CoreConstants.FAILED.equalsIgnoreCase(m_scanStatus) && !CoreConstants.UNKNOWN.equalsIgnoreCase(m_scanStatus) ){
                     JSONObject scanSummary = scanServiceProvider.getScanDetails(scan.getScanId());
                     if(null!=scanSummary){
                         JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
@@ -418,6 +435,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     }
                 }
 
+                Thread.sleep(30000);
             }
             System.out.println();
         }catch(Exception e) {
