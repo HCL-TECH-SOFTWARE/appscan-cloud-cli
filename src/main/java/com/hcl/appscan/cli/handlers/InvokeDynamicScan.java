@@ -51,11 +51,15 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 
 import static com.hcl.appscan.cli.constants.CLIConstants.*;
 import static com.hcl.appscan.cli.constants.ScannerConstants.*;
+import static java.io.File.pathSeparator;
+import static java.io.File.separator;
 import static picocli.CommandLine.*;
 import static picocli.CommandLine.Help.*;
 
@@ -404,13 +408,19 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     public File getReport(IResultsProvider provider, ScanResults results) throws IOException {
 
-        File report = new File("AppscanReports", getReportName(provider, results));
+        String cwd = Path.of("").toAbsolutePath().toString();
+        String BASE_DIRECTORY = cwd+separator+messageBundle.getString("report.download.location");
 
-        if( report.getCanonicalPath().startsWith("AppscanReports")){
-            if (!report.isFile()) provider.getResultsFile(report, null);
+        File report = new File(BASE_DIRECTORY , getReportName(provider, results));
+
+        if (report.getCanonicalPath().startsWith(BASE_DIRECTORY) && !report.isFile()) {
+            provider.getResultsFile(report, null);
+            return report;
+        }else{
+            return null;
         }
 
-        return report;
+
     }
 
     private String getReportName(IResultsProvider provider, ScanResults results) {
