@@ -283,11 +283,17 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
         CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
         try {
-            authHandler.updateCredentials(key, secret);
-        } catch (Exception e) {
-            logger.error(messageBundle.getString("error.invalid.credentials"));
-            throw e;
+            boolean isAuthenticated = authHandler.updateCredentials(key, secret);
+            if(!isAuthenticated) {
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.credentials")));
+            }
+
+        } catch (Exception pe){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.credentials")));
         }
+
         if(presenceId!=null){
             Map<String, String> presenceMap = getPresenceMap(authHandler);
             if(!presenceMap.containsKey(presenceId)){
@@ -366,7 +372,12 @@ public class InvokeDynamicScan implements Callable<Integer> {
         Map<String, String> properties = scanner.getProperties();
         properties.put(CoreConstants.SCANNER_TYPE, scanner.getType());
         properties.put(CoreConstants.APP_ID, appId);
-        properties.put(CoreConstants.SCAN_NAME, scanName + "_" + SystemUtil.getTimeStamp());
+        if(null==scanName || "".equals(scanName)){
+            scanName="DAST_"+SystemUtil.getTimeStamp()+"_"+target;
+        }else{
+            scanName = scanName + "_" + SystemUtil.getTimeStamp();
+        }
+        properties.put(CoreConstants.SCAN_NAME, scanName);
         properties.put(CoreConstants.EMAIL_NOTIFICATION, Boolean.toString(emailNotification));
         properties.put(FULLY_AUTOMATIC, Boolean.toString(!allowIntervention));
         properties.put(CoreConstants.SERVER_URL, authHandler.getServer());
