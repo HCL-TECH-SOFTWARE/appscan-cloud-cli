@@ -29,15 +29,15 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.*;
 
 @Command(name = "getapplications" , sortOptions = false, mixinStandardHelpOptions = true , subcommands = {HelpCommand.class} ,
-        description ="Get list of applications from Appscan on Cloud" , footer = "Copyright 2023 HCL America, Inc."
+        description ="Get list of application id's from Appscan on Cloud" , footer = "Copyright 2023 HCL America, Inc."
 )
 public class GetApplicationIds implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(GetApplicationIds.class);
 
-    @Option(names = {"--key"}, description = "[Required] ASoC API Key", required = true , order = 1)
+    @Option(names = {"--key"}, description = "[Required] Appscan on Cloud API Key", required = true , order = 1)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] ASoC API Secret", required = true , order = 2)
+    @Option(names = {"--secret"}, description = "[Required] Appscan on Cloud API Secret", required = true , order = 2)
     private String secret;
 
 

@@ -35,9 +35,9 @@ public class GetPresenceIds implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(GetPresenceIds.class);
 
-    @Option(names = {"--key"}, description = "[Required] ASoC API Key", required = true , order = 1)
+    @Option(names = {"--key"}, description = "[Required] Appscan on Cloud API Key", required = true , order = 1)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] ASoC API Secret", required = true , order = 2)
+    @Option(names = {"--secret"}, description = "[Required] Appscan on Cloud API Secret", required = true , order = 2)
     private String secret;
 
 

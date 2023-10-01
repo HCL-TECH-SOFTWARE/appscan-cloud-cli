@@ -68,7 +68,7 @@ enum Optimization { Fast, Faster, Fastest, NoOptimization }
 enum ReportFormat { html, pdf, csv, xml }
 enum LoginType { None , Automatic , Manual }
 @Command(name = "invokedynamicscan", sortOptions = false, mixinStandardHelpOptions = true, version = "1.0",
-        description = "This Command is used to initiate the Dynamic Security Analysis Scan and seamlessly fetch the scan results upon the scan's completion. These results include identified issues, detailed reports, and corresponding report URLs. Additionally, the CLI can be configured with specific command line options to set failure conditions, enabling it to send a pass/fail signal to the pipeline accordingly" ,
+        description = "This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner." ,
         optionListHeading = "%n@|bold,underline Options|@:%n" , descriptionHeading = "%n@|bold,underline Description|@:%n%n",
         subcommands = {HelpCommand.class} , footer = "Copyright 2023 HCL America, Inc.")
 public class InvokeDynamicScan implements Callable<Integer> {
@@ -93,7 +93,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Option(names = {"--optimization"}, defaultValue = "fast", description = "[Optional] You can reduce scan time by choosing a balance between speed and issue coverage. Valid values : ${COMPLETION-CANDIDATES}", required = false , showDefaultValue = Visibility.ALWAYS , order = 7)
     private Optimization optimization;
     private Boolean emailNotification;
-    @Option(names = {"--reportFormat"},defaultValue = "html",  description = "[Optional] Specify format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false , showDefaultValue = Visibility.ALWAYS , order = 9)
+    @Option(names = {"--reportFormat"},defaultValue = "html",  description = "[Optional] Specify the format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false , showDefaultValue = Visibility.ALWAYS , order = 9)
     private ReportFormat reportFormat;
     private Boolean allowIntervention;
     @Option(names = {"--presenceId"}, description = "[Optional] For sites not available on the internet, provide the ID of the AppScan Presence that can be used for the scan.", required = false ,order = 11)
@@ -101,7 +101,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private Boolean waitForResults;
     private Boolean failBuildNonCompliance;
     private  File scanFile;
-    @Option(names = {"--loginType"},defaultValue = "None", description = "[Optional] Which Login method do you want to use? Type None if login not required. Type Automatic if you want to provide loginUser and password. Type Manual if you want to specify Login Sequence File. Valid values : ${COMPLETION-CANDIDATES} ", required = false ,showDefaultValue = Visibility.ALWAYS , order = 15)
+    @Option(names = {"--loginType"},defaultValue = "None", description = "[Optional] Which Login method do you want to use? Enter None if login not required. Enter Automatic if you want to provide loginUser and password. Enter Manual if you want to specify Login Sequence File. Valid values : ${COMPLETION-CANDIDATES} ", required = false ,showDefaultValue = Visibility.ALWAYS , order = 15)
     private  LoginType loginType;
 
     @Option(names = {"--loginUser"}, description = "[Optional] If your app requires login, enter valid user credentials so that Application Security on Cloud can log in to the site.", required = false , order = 16)
