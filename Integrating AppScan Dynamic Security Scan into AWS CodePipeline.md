@@ -64,7 +64,8 @@ scan as part of the build process.
         **Image -
         aws/codebuild/amazonlinux2-x86_64-standard:corretto11**
 
-        ![Env AWS Codebuild](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/a5698a0f-0130-4c1a-b5dd-d83afe21038c)
+        
+      ![Env AWS Codebuild](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9a3d1873-0e18-46e2-a726-50e32e7137b5)
 
 
     -   **Buildspec**: Choose \"Use a buildspec file\" and select the
