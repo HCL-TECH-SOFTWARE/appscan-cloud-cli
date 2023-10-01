@@ -19,7 +19,7 @@
 Gets list of application id's from Appscan on Cloud
 
 ~~~bash  
-Usage: appscan getapplications [-hV] --key=<key> --secret=<secret> [COMMAND]
+Usage:  getapplications [-hV] --key=<key> --secret=<secret> [COMMAND]
 
   -h, --help              Show this help message and exit.
   -V, --version           Print version information and exit.
@@ -34,7 +34,7 @@ Commands:
 This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner.
 
 ~~~bash  
-Usage: appscan invokedynamicscan [-hV] [--allowIntervention]
+Usage:  invokedynamicscan [-hV] [--allowIntervention]
                                  [--emailNotification]
                                  [--failBuildNonCompliance] [--waitForResults]
                                  --appId=<appId> --key=<key>
@@ -124,7 +124,7 @@ Commands:
                  conditions are logically "OR"'d together, so if one of the
                  conditions is met, the build will fail.
 
- Usage: appscan invokedynamicscan failbuildif [-ci=<arg4>] [-hi=<arg1>] [-li=<arg3>] [-mi=<arg2>] [-ti=<arg0>] 
+ Usage:  invokedynamicscan failbuildif [-ci=<arg4>] [-hi=<arg1>] [-li=<arg3>] [-mi=<arg2>] [-ti=<arg0>] 
 
  Options 
 
@@ -153,7 +153,7 @@ Commands:
 Gets list of presence id’s from Appscan on Cloud
 
 ~~~bash
-Usage: appscan getpresenceids [-hV] --key=<key> --secret=<secret> [COMMAND]
+Usage:  getpresenceids [-hV] --key=<key> --secret=<secret> [COMMAND]
 Get list of presence id's from Appscan on Cloud
   -h, --help              Show this help message and exit.
   -V, --version           Print version information and exit.
