@@ -353,7 +353,10 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
             }
 
-        }catch (Exception e) {
+        }catch (ParameterException pe){
+            throw pe;
+        }
+        catch (Exception e) {
             logger.error(e.getMessage());
             throw e;
         }
@@ -397,11 +400,21 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     }
 
-    private DynamicAnalyzer getDynamicAnalyzer() {
+    private DynamicAnalyzer getDynamicAnalyzer() throws ParameterException {
         DynamicAnalyzer m_scanner = new DynamicAnalyzer(target);
 
          if (loginType.equals(LoginType.Automatic)) {
             m_scanner.setLoginType(ScannerConstants.AUTOMATIC);
+            StringBuilder errMsg=new StringBuilder();
+            if(null==loginUser || loginUser.isBlank()){
+                errMsg.append(messageBundle.getString("error.loginUser.required"));
+            }
+             if(null==loginPassword || loginPassword.isBlank()){
+                 errMsg.append(messageBundle.getString("error.loginPassword.required"));
+             }
+             if(errMsg.length()!=0){
+                 throw new ParameterException(spec.commandLine(),errMsg.toString());
+             }
             m_scanner.setLoginUser(loginUser);
             m_scanner.setLoginPassword(loginPassword);
         } else if(loginType.equals(LoginType.Manual)){
