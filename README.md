@@ -23,8 +23,8 @@ Usage:  getapplications [-hV] --key=<key> --secret=<secret> [COMMAND]
 
   -h, --help              Show this help message and exit.
   -V, --version           Print version information and exit.
-      --key=<key>         [Required] ASoC API Key
-      --secret=<secret>   [Required] ASoC API Secret
+      --key=<key>         [Required] Appscan on Cloud API Key
+      --secret=<secret>   [Required] Appscan on Cloud API Secret
 Commands:
   help : Display help information about the specified command
 ~~~
@@ -157,8 +157,8 @@ Usage:  getpresenceids [-hV] --key=<key> --secret=<secret> [COMMAND]
 Get list of presence id's from Appscan on Cloud
   -h, --help              Show this help message and exit.
   -V, --version           Print version information and exit.
-      --key=<key>         [Required] ASoC API Key
-      --secret=<secret>   [Required] ASoC API Secret
+      --key=<key>         [Required] Appscan on Cloud API Key
+      --secret=<secret>   [Required] Appscan on Cloud API Secret
 ~~~
 
 ### help
