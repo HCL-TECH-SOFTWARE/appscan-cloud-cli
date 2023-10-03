@@ -78,9 +78,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Spec
     Model.CommandSpec spec;
 
-    @Option(names = {"--key"}, description = "[Required] Appscan on Cloud API Key", required = true , order = 1)
+    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud API Key", required = true , order = 1)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] Appscan on Cloud API Secret", required = true , order = 2)
+    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud API Secret", required = true , order = 2)
     private String secret;
     @Option(names = {"--appId"}, description = "[Required] The HCL AppScan on Cloud application that this scan will be associated with", required = true , order = 3)
     private String appId;
@@ -323,35 +323,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             }
             IResultsProvider resultsProvider = new NonCompliantIssuesResultProvider(scan.getScanId(), scan.getType(), scan.getServiceProvider(), progress);
             results = getScanResults(scan, progress, authHandler, resultsProvider);
-            if (results.isPresent()) {
-                logScanResults(scan, results.get());
-                logger.info("Downloading Scan Report. Please wait...");
-                resultsProvider.setReportFormat(reportFormat.name());
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                Optional<ScanResults> finalResults = results;
-                Callable<String> downloadReportTask = () -> {
-                    File report = getReport(resultsProvider, finalResults.get());
-                    String reportPath = report.getAbsolutePath();
-                    return "Report downloaded successfully. Download location - " + reportPath;
-                };
-                try {
-                    Future<String> future = executor.submit(downloadReportTask);
-                    String reportDownloadResult = future.get(90, TimeUnit.SECONDS);
-                    logger.info(reportDownloadResult);
-                } catch (TimeoutException e) {
-                    logger.error("Unable to download the report. Operation timed out!");
-                } catch (Exception e) {
-                    logger.error("Caught Exception while downloading the report : Error - "+ e.getMessage());
-                } finally {
-                    executor.shutdown();
-                }
-
-            } else {
-                logger.error(messageBundle.getString("error.invalid.scanresult"));
-                throw new AbortException(com.hcl.appscan.sdk.Messages.getMessage(ScanConstants.SCAN_FAILED, (" Scan Id: " + scan.getScanId() +
-                        ", Scan Name: " + scan.getName())));
-
-            }
+            processScanResults(results,resultsProvider,scan);
 
         }catch (ParameterException pe){
             throw pe;
@@ -361,6 +333,38 @@ public class InvokeDynamicScan implements Callable<Integer> {
             throw e;
         }
         return results;
+    }
+
+    private void processScanResults(Optional<ScanResults> results ,IResultsProvider resultsProvider , IScan scan ) throws Exception {
+        if (results.isPresent()) {
+            logScanResults(scan, results.get());
+            logger.info("Downloading Scan Report. Please wait...");
+            resultsProvider.setReportFormat(reportFormat.name());
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Callable<String> downloadReportTask = () -> {
+                File report = getReport(resultsProvider, results.get());
+                String reportPath = report.getAbsolutePath();
+                return "Report downloaded successfully. Download location - " + reportPath;
+            };
+            try {
+                Future<String> future = executor.submit(downloadReportTask);
+                String reportDownloadResult = future.get(90, TimeUnit.SECONDS);
+                logger.info(reportDownloadResult);
+            } catch (TimeoutException e) {
+                logger.error("Unable to download the report. Operation timed out!");
+            } catch (Exception e) {
+                logger.error("Caught Exception while downloading the report : Error - "+ e.getMessage());
+            } finally {
+                executor.shutdown();
+            }
+
+        } else {
+            logger.error(messageBundle.getString("error.invalid.scanresult"));
+            throw new AbortException(com.hcl.appscan.sdk.Messages.getMessage(ScanConstants.SCAN_FAILED, (" Scan Id: " + scan.getScanId() +
+                    ", Scan Name: " + scan.getName())));
+
+        }
+
     }
 
     private IScan getScan(CloudAuthenticationHandler authHandler, IProgress progress) throws Exception {
@@ -406,15 +410,10 @@ public class InvokeDynamicScan implements Callable<Integer> {
          if (loginType.equals(LoginType.Automatic)) {
             m_scanner.setLoginType(ScannerConstants.AUTOMATIC);
             StringBuilder errMsg=new StringBuilder();
-            if(null==loginUser || loginUser.isBlank()){
-                errMsg.append(messageBundle.getString("error.loginUser.required"));
+            if(null==loginUser || loginUser.isBlank() || null==loginPassword || loginPassword.isBlank()){
+                throw new ParameterException(spec.commandLine(),messageBundle.getString("error.loginUser.required"));
+
             }
-             if(null==loginPassword || loginPassword.isBlank()){
-                 errMsg.append(messageBundle.getString("error.loginPassword.required"));
-             }
-             if(errMsg.length()!=0){
-                 throw new ParameterException(spec.commandLine(),errMsg.toString());
-             }
             m_scanner.setLoginUser(loginUser);
             m_scanner.setLoginPassword(loginPassword);
         } else if(loginType.equals(LoginType.Manual)){
@@ -433,11 +432,11 @@ public class InvokeDynamicScan implements Callable<Integer> {
     public File getReport(IResultsProvider provider, ScanResults results) throws IOException {
 
         String cwd = Path.of("").toAbsolutePath().toString();
-        String BASE_DIRECTORY = cwd+separator+messageBundle.getString("report.download.location");
+        String baseDir = cwd+separator+messageBundle.getString("report.download.location");
 
-        File report = new File(BASE_DIRECTORY , getReportName(provider, results));
+        File report = new File(baseDir , getReportName(provider, results));
 
-        if (report.getCanonicalPath().startsWith(BASE_DIRECTORY) && !report.isFile()) {
+        if (report.getCanonicalPath().startsWith(baseDir) && !report.isFile()) {
             provider.getResultsFile(report, null);
             return report;
         }else{
