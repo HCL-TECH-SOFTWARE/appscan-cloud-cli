@@ -47,14 +47,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 
 import static com.hcl.appscan.cli.constants.CLIConstants.*;
 import static com.hcl.appscan.cli.constants.ScannerConstants.*;
+import static java.io.File.pathSeparator;
+import static java.io.File.separator;
 import static picocli.CommandLine.*;
 import static picocli.CommandLine.Help.*;
 
@@ -63,7 +68,7 @@ enum Optimization { Fast, Faster, Fastest, NoOptimization }
 enum ReportFormat { html, pdf, csv, xml }
 enum LoginType { None , Automatic , Manual }
 @Command(name = "invokedynamicscan", sortOptions = false, mixinStandardHelpOptions = true, version = "1.0",
-        description = "This Command is used to initiate the Dynamic Security Analysis Scan and seamlessly fetch the scan results upon the scan's completion. These results include identified issues, detailed reports, and corresponding report URLs. Additionally, the CLI can be configured with specific command line options to set failure conditions, enabling it to send a pass/fail signal to the pipeline accordingly" ,
+        description = "This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner." ,
         optionListHeading = "%n@|bold,underline Options|@:%n" , descriptionHeading = "%n@|bold,underline Description|@:%n%n",
         subcommands = {HelpCommand.class} , footer = "Copyright 2023 HCL America, Inc.")
 public class InvokeDynamicScan implements Callable<Integer> {
@@ -73,9 +78,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Spec
     Model.CommandSpec spec;
 
-    @Option(names = {"--key"}, description = "[Required] Appscan on Cloud API Key", required = true , order = 1)
+    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud API Key", required = true , order = 1)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] Appscan on Cloud API Secret", required = true , order = 2)
+    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud API Secret", required = true , order = 2)
     private String secret;
     @Option(names = {"--appId"}, description = "[Required] The HCL AppScan on Cloud application that this scan will be associated with", required = true , order = 3)
     private String appId;
@@ -88,7 +93,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Option(names = {"--optimization"}, defaultValue = "fast", description = "[Optional] You can reduce scan time by choosing a balance between speed and issue coverage. Valid values : ${COMPLETION-CANDIDATES}", required = false , showDefaultValue = Visibility.ALWAYS , order = 7)
     private Optimization optimization;
     private Boolean emailNotification;
-    @Option(names = {"--reportFormat"},defaultValue = "html",  description = "[Optional] Specify format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false , showDefaultValue = Visibility.ALWAYS , order = 9)
+    @Option(names = {"--reportFormat"},defaultValue = "html",  description = "[Optional] Specify the format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false , showDefaultValue = Visibility.ALWAYS , order = 9)
     private ReportFormat reportFormat;
     private Boolean allowIntervention;
     @Option(names = {"--presenceId"}, description = "[Optional] For sites not available on the internet, provide the ID of the AppScan Presence that can be used for the scan.", required = false ,order = 11)
@@ -96,7 +101,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private Boolean waitForResults;
     private Boolean failBuildNonCompliance;
     private  File scanFile;
-    @Option(names = {"--loginType"},defaultValue = "None", description = "[Optional] Which Login method do you want to use? Type None if login not required. Type Automatic if you want to provide loginUser and password. Type Manual if you want to specify Login Sequence File. Valid values : ${COMPLETION-CANDIDATES} ", required = false ,showDefaultValue = Visibility.ALWAYS , order = 15)
+    @Option(names = {"--loginType"},defaultValue = "None", description = "[Optional] Which Login method do you want to use? Enter None if login not required. Enter Automatic if you want to provide loginUser and password. Enter Manual if you want to specify Login Sequence File. Valid values : ${COMPLETION-CANDIDATES} ", required = false ,showDefaultValue = Visibility.ALWAYS , order = 15)
     private  LoginType loginType;
 
     @Option(names = {"--loginUser"}, description = "[Optional] If your app requires login, enter valid user credentials so that Application Security on Cloud can log in to the site.", required = false , order = 16)
@@ -278,11 +283,17 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
         CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
         try {
-            authHandler.updateCredentials(key, secret);
-        } catch (Exception e) {
-            logger.error(messageBundle.getString("error.invalid.credentials"));
-            throw e;
+            boolean isAuthenticated = authHandler.updateCredentials(key, secret);
+            if(!isAuthenticated) {
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.credentials")));
+            }
+
+        } catch (Exception pe){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.credentials")));
         }
+
         if(presenceId!=null){
             Map<String, String> presenceMap = getPresenceMap(authHandler);
             if(!presenceMap.containsKey(presenceId)){
@@ -312,41 +323,48 @@ public class InvokeDynamicScan implements Callable<Integer> {
             }
             IResultsProvider resultsProvider = new NonCompliantIssuesResultProvider(scan.getScanId(), scan.getType(), scan.getServiceProvider(), progress);
             results = getScanResults(scan, progress, authHandler, resultsProvider);
-            if (results.isPresent()) {
-                logScanResults(scan, results.get());
-                logger.info("Downloading Scan Report. Please wait...");
-                resultsProvider.setReportFormat(reportFormat.name());
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                Optional<ScanResults> finalResults = results;
-                Callable<String> downloadReportTask = () -> {
-                    File report = getReport(resultsProvider, finalResults.get());
-                    String reportPath = report.getAbsolutePath();
-                    return "Report downloaded successfully. Download location - " + reportPath;
-                };
-                try {
-                    Future<String> future = executor.submit(downloadReportTask);
-                    String reportDownloadResult = future.get(90, TimeUnit.SECONDS);
-                    logger.info(reportDownloadResult);
-                } catch (TimeoutException e) {
-                    logger.error("Unable to download the report. Operation timed out!");
-                } catch (Exception e) {
-                    logger.error("Caught Exception while downloading the report : Error - "+ e.getMessage());
-                } finally {
-                    executor.shutdown();
-                }
+            processScanResults(results,resultsProvider,scan);
 
-            } else {
-                logger.error(messageBundle.getString("error.invalid.scanresult"));
-                throw new AbortException(com.hcl.appscan.sdk.Messages.getMessage(ScanConstants.SCAN_FAILED, (" Scan Id: " + scan.getScanId() +
-                        ", Scan Name: " + scan.getName())));
-
-            }
-
-        }catch (Exception e) {
+        }catch (ParameterException pe){
+            throw pe;
+        }
+        catch (Exception e) {
             logger.error(e.getMessage());
             throw e;
         }
         return results;
+    }
+
+    private void processScanResults(Optional<ScanResults> results ,IResultsProvider resultsProvider , IScan scan ) throws Exception {
+        if (results.isPresent()) {
+            logScanResults(scan, results.get());
+            logger.info("Downloading Scan Report. Please wait...");
+            resultsProvider.setReportFormat(reportFormat.name());
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Callable<String> downloadReportTask = () -> {
+                File report = getReport(resultsProvider, results.get());
+                String reportPath = report.getAbsolutePath();
+                return "Report downloaded successfully. Download location - " + reportPath;
+            };
+            try {
+                Future<String> future = executor.submit(downloadReportTask);
+                String reportDownloadResult = future.get(90, TimeUnit.SECONDS);
+                logger.info(reportDownloadResult);
+            } catch (TimeoutException e) {
+                logger.error("Unable to download the report. Operation timed out!");
+            } catch (Exception e) {
+                logger.error("Caught Exception while downloading the report : Error - "+ e.getMessage());
+            } finally {
+                executor.shutdown();
+            }
+
+        } else {
+            logger.error(messageBundle.getString("error.invalid.scanresult"));
+            throw new AbortException(com.hcl.appscan.sdk.Messages.getMessage(ScanConstants.SCAN_FAILED, (" Scan Id: " + scan.getScanId() +
+                    ", Scan Name: " + scan.getName())));
+
+        }
+
     }
 
     private IScan getScan(CloudAuthenticationHandler authHandler, IProgress progress) throws Exception {
@@ -361,7 +379,12 @@ public class InvokeDynamicScan implements Callable<Integer> {
         Map<String, String> properties = scanner.getProperties();
         properties.put(CoreConstants.SCANNER_TYPE, scanner.getType());
         properties.put(CoreConstants.APP_ID, appId);
-        properties.put(CoreConstants.SCAN_NAME, scanName + "_" + SystemUtil.getTimeStamp());
+        if(null==scanName || "".equals(scanName)){
+            scanName="DAST_"+SystemUtil.getTimeStamp()+"_"+target;
+        }else{
+            scanName = scanName + "_" + SystemUtil.getTimeStamp();
+        }
+        properties.put(CoreConstants.SCAN_NAME, scanName);
         properties.put(CoreConstants.EMAIL_NOTIFICATION, Boolean.toString(emailNotification));
         properties.put(FULLY_AUTOMATIC, Boolean.toString(!allowIntervention));
         properties.put(CoreConstants.SERVER_URL, authHandler.getServer());
@@ -381,11 +404,16 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     }
 
-    private DynamicAnalyzer getDynamicAnalyzer() {
+    private DynamicAnalyzer getDynamicAnalyzer() throws ParameterException {
         DynamicAnalyzer m_scanner = new DynamicAnalyzer(target);
 
          if (loginType.equals(LoginType.Automatic)) {
             m_scanner.setLoginType(ScannerConstants.AUTOMATIC);
+            StringBuilder errMsg=new StringBuilder();
+            if(null==loginUser || loginUser.isBlank() || null==loginPassword || loginPassword.isBlank()){
+                throw new ParameterException(spec.commandLine(),messageBundle.getString("error.loginUser.required"));
+
+            }
             m_scanner.setLoginUser(loginUser);
             m_scanner.setLoginPassword(loginPassword);
         } else if(loginType.equals(LoginType.Manual)){
@@ -401,11 +429,21 @@ public class InvokeDynamicScan implements Callable<Integer> {
         return m_scanner;
     }
 
-    public File getReport(IResultsProvider provider, ScanResults results) {
-        File report = new File(messageBundle.getString("report.download.location"), getReportName(provider, results));
+    public File getReport(IResultsProvider provider, ScanResults results) throws IOException {
 
-        if (!report.isFile()) provider.getResultsFile(report, null);
-        return report;
+        String cwd = Path.of("").toAbsolutePath().toString();
+        String baseDir = cwd+separator+messageBundle.getString("report.download.location");
+
+        File report = new File(baseDir , getReportName(provider, results));
+
+        if (report.getCanonicalPath().startsWith(baseDir) && !report.isFile()) {
+            provider.getResultsFile(report, null);
+            return report;
+        }else{
+            return null;
+        }
+
+
     }
 
     private String getReportName(IResultsProvider provider, ScanResults results) {
@@ -442,7 +480,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     m_scanStatus=SCAN_STATUS_COMPLETED;
                 }
                 if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) {
-                    System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ] : Unable to reach AppScan on Cloud Server. Please check your network settings!", m_scanStatus , "-" ,
+                    System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ] : Unable to reach AppScan on Cloud Servers. Please check your network settings!", m_scanStatus , "-" ,
                             "-");
                     requestCounter++;
                 }
@@ -456,8 +494,14 @@ public class InvokeDynamicScan implements Callable<Integer> {
                         int minutes = duration / 60;
                         int remainingSeconds = duration % 60;
                         String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
-                        System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration,
-                                latestExecution.getString("Progress"));
+                        if(m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)){
+                            System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]"
+                                    , m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
+                        }else{
+                            System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]                                                                                "
+                                    , m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
+                        }
+
                     }
                 }
 
