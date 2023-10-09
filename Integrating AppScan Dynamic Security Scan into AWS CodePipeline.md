@@ -1,6 +1,6 @@
 # Integrating Dynamic Security Scan into AWS CodeBuild and CodePipeline 🚀
 
-✨ **Introduction** ✨
+## Introduction 
 
 Incorporate security testing into your AWS CodeBuild and CodePipeline
 workflows by leveraging the HCL AppScan Command-Line Interface (CLI)
@@ -9,7 +9,7 @@ Application Security Testing) scans through HCL AppScan On Cloud. The
 CLI tool also allows you to perform some additional supplementary
 operations.
 
-✨ **Prerequisites** ✨
+## Prerequisites
 
 -   You need an account at the [HCL AppScan on
     Cloud](https://cloud.appscan.com/AsoCUI/serviceui/home) service
@@ -35,17 +35,16 @@ operations.
 
 -   Java 11 or later should be available in AWS Codebuild environment.
 
-✨ **Integrating Dynamic Security Scan into AWS CodeBuild and
-CodePipeline** ✨
+## Integrating Dynamic Security Scan into AWS CodeBuild and CodePipeline
 
 This section provides instructions on configuring AWS CodeBuild for
 dynamic security scans and integrating it as a stage within an AWS
 CodePipeline. The AppScan CLI tool will perform the dynamic security
 scan as part of the build process.
 
-**Part 1: Configure AWS CodeBuild for Dynamic Security Scan**
+### Part 1: Configure AWS CodeBuild for Dynamic Security Scan
 
-**Step 1: Set Up CodeBuild Project**
+#### Step 1: Set Up CodeBuild Project
 
 1.  Open the AWS Management Console and navigate to **CodeBuild**.
 
@@ -76,29 +75,29 @@ scan as part of the build process.
         ![Buildspec Options](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/bb9da007-2ff8-4ba5-b1d9-bac61be1e176)
 
 
-> **Example buildspec** --
-~~~
-version: 0.2
-env:
-  parameter-store:
-      STAGING_ASOC_KEY: "STAGING_ASOC_KEY_ID"
-      STAGING_ASOC_KEY_SECRET: "STAGING_ASOC_KEY_SECRET"
-phases:
-  build:
-    commands:
-       - wget [URL of appscan-cloud-cli jar]
-       - java -jar appscan-cloud-cli-1.0.0.jar invokedynamicscan --key=$STAGING_ASOC_KEY --secret=$STAGING_ASOC_KEY_SECRET --appId=<ASoC Application ID> --scanName=<Scan Name> --target=<Target URL>
-artifacts:
-  files:
-    - '*/AppscanReports/*'
-  discard-paths: yes
-
-~~~
-In your **buildspec.yml**, add the commands to download the AppScan CLI
-tool and execute the security scan. See the commands in the above
-buildspec example for reference. We assume the API Key ID and Secret are
-stored in the AWS System Manager Parameter Store. For more information
-on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Readme](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli).
+        > **Example buildspec** --
+        ~~~
+        version: 0.2
+        env:
+          parameter-store:
+              STAGING_ASOC_KEY: "STAGING_ASOC_KEY_ID"
+              STAGING_ASOC_KEY_SECRET: "STAGING_ASOC_KEY_SECRET"
+        phases:
+          build:
+            commands:
+               - wget [URL of appscan-cloud-cli jar]
+               - java -jar appscan-cloud-cli-1.0.0.jar invokedynamicscan --key=$STAGING_ASOC_KEY --secret=$STAGING_ASOC_KEY_SECRET --appId=<ASoC Application ID> --scanName=<Scan Name> --target=<Target URL>
+        artifacts:
+          files:
+            - '*/AppscanReports/*'
+          discard-paths: yes
+        
+        ~~~
+        In your **buildspec.yml**, add the commands to download the AppScan CLI
+        tool and execute the security scan. See the commands in the above
+        buildspec example for reference. We assume the API Key ID and Secret are
+        stored in the AWS System Manager Parameter Store. For more information
+        on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Readme](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli).
 
 4.  **Artifacts**: Configure where the build artifacts (Scan Analysis
     Report) should be stored after the build (scan) completes. For
@@ -106,35 +105,35 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
     your preference and mention the path as "AppscanReports" and the
     Namespace type as Build ID.
     
-![Codebuild Artifacts Configuration](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9e578667-1795-4a9c-acf0-939988860f01)
+    ![Codebuild Artifacts Configuration](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9e578667-1795-4a9c-acf0-939988860f01)
 
 
 
-6.  **Logs**: Choose the desired CloudWatch settings for your build
+5.  **Logs**: Choose the desired CloudWatch settings for your build
     logs.
 
     
-![Configure Codebuild logs](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/5f2e4097-46da-488a-8841-195b076abe23)
+    ![Configure Codebuild logs](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/5f2e4097-46da-488a-8841-195b076abe23)
 
 
-8.  **Service role**: If you don\'t have a service role, create a new
+6.  **Service role**: If you don\'t have a service role, create a new
     one or use an existing one with the necessary permissions.
 
-9.  **VPC**: Configure VPC settings if needed for your application.
+7.  **VPC**: Configure VPC settings if needed for your application.
 
-10.  **Timeouts**: Set appropriate timeouts for your build phases. You can specify a timeout value anywhere from 5 minutes to 8 hours.
+8.  **Timeouts**: Set appropriate timeouts for your build phases. You can specify a timeout value anywhere from 5 minutes to 8 hours.
      If you leave the hours and minutes fields blank, CodeBuild will default to a timeout of 60 minutes.
      It is recommended to carefully consider the nature of your builds and select a timeout that aligns with their expected duration.
 
 
-![Codebuild Timeout Configuration](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/845779c7-c537-48c5-8ef2-5b7e689be792)
+    ![Codebuild Timeout Configuration](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/845779c7-c537-48c5-8ef2-5b7e689be792)
 
 
-12.  **Build badge**: Configure a build badge if desired.
+9.  **Build badge**: Configure a build badge if desired.
 
-13. To create the CodeBuild project, click on **Create build project**.
+10. To create the CodeBuild project, click on **Create build project**.
 
-**Step 2: Test CodeBuild Configuration:**
+### Step 2: Test CodeBuild Configuration:
 
 1.  Trigger a build manually to ensure your build configuration is
     working as expected.
@@ -144,9 +143,9 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
 3.  Verify that your CLI tool successfully performs the dynamic security
     scan during the build process.
 
-✨ **Part 2: Integrate CodeBuild into CodePipeline** ✨
+## Part 2: Integrate CodeBuild into CodePipeline
 
-**Step 1: Set Up CodePipeline:**
+### Step 1: Set Up CodePipeline:
 
 1.  Open the AWS Management Console and navigate to **CodePipeline**.
 
@@ -178,7 +177,7 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
     -   Enter a name for the stage (e.g.,
         \"**Dynamic_Security_Analysis**\").
 
-         ![CodePipeline Add Stage](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/6a09289b-3089-41cf-a513-78153358293f)
+      ![CodePipeline Add Stage](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/6a09289b-3089-41cf-a513-78153358293f)
 
 
     -   Click on **Add action group** and choose \"AWS CodeBuild\" as
@@ -207,7 +206,7 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
 
 10. Click on **Create pipeline** to create the CodePipeline.
 
-**Step 2: Test CodePipeline Integration:**
+### Step 2: Test CodePipeline Integration:
 
 1.  Trigger your pipeline manually or by your configured source provider
     (e.g., code commits).
@@ -220,22 +219,22 @@ on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Re
 4. Upon successful completion of the scan , the build logs in AWS CodeBuild would contain scan details ,
    Scan Result Findings Summary and other logs generated as part of the process.
     
-![Scan Summary Logs](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/d841c316-b82c-4ba6-b741-a0420808372f)
+    ![Scan Summary Logs](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/d841c316-b82c-4ba6-b741-a0420808372f)
 
 
 5. The Scan Report would be available to download in format specified using --reportFormat or HTML format by default. This report includes only the non-compliant issues.
    The Artifacts location can be configured in CodeBuild Project as discussed in earlier steps.
    
-    ![Artifacts Location](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9937f84e-0013-413b-88d5-668c2bd68086)
+   ![Artifacts Location](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9937f84e-0013-413b-88d5-668c2bd68086)
 
 
    
-![Security Report](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9ebe7274-bd08-4258-89c3-7f088bb38023)
-
-Note: The scan report and summary are available only if --waitForResult is set to true in appscan cloud cli command while confuring buildspec in CodeBuild. --waitForResult is by default set to true.
-The report and summary otherwise are available for download from HCL AppScan on Cloud.
+   ![Security Report](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9ebe7274-bd08-4258-89c3-7f088bb38023)
+    
+    **Note: The scan report and summary are available only if --waitForResult is set to true in appscan cloud cli command while confuring buildspec in CodeBuild. --waitForResult is by default set to true.
+    The report and summary otherwise are available for download from HCL AppScan on Cloud.**
    
-✨ **Conclusion** ✨
+## Conclusion
 
 You have successfully configured AWS CodeBuild to include dynamic
 security scans using your published CLI tool and integrated it as a
