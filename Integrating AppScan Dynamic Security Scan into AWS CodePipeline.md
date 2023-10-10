@@ -31,7 +31,7 @@ operations.
 
 -   A Target website URL to perform a dynamic scan on.
 
--   Access to the AppScan CLI Tool Binary hosted on Maven Central.
+-   Access to the [AppScan CLI Tool Binary hosted on Maven Central](https://central.sonatype.com/artifact/com.hcl/appscan-cloud-cli/overview)
 
 -   Java 11 or later should be available in AWS Codebuild environment.
 
