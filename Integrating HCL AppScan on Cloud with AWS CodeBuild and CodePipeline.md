@@ -1,4 +1,4 @@
-# Integrating Dynamic Security Scan into AWS CodeBuild and CodePipeline 🚀
+# Integrating HCL AppScan on Cloud with AWS CodeBuild and CodePipeline 🚀
 
 ## Introduction 
 
@@ -7,7 +7,7 @@ workflows by leveraging the HCL AppScan Command-Line Interface (CLI)
 capabilities. This tool empowers you to seamlessly conduct DAST (Dynamic
 Application Security Testing) scans through HCL AppScan On Cloud. The
 CLI tool also allows you to perform some additional supplementary
-operations.
+operations. The first release supports integration with AppScan on Cloud Dynamic Analysis Security Testing (DAST).
 
 ## Prerequisites
 
