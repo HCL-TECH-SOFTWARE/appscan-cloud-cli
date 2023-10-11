@@ -31,7 +31,7 @@ operations.
 
 -   A Target website URL to perform a dynamic scan on.
 
--   Access to the AppScan CLI Tool Binary hosted on Maven Central.
+-   Access to the [AppScan CLI Tool Binary hosted on Maven Central](https://central.sonatype.com/artifact/com.hcl/appscan-cloud-cli/overview)
 
 -   Java 11 or later should be available in AWS Codebuild environment.
 
@@ -85,16 +85,16 @@ scan as part of the build process.
         phases:
           build:
             commands:
-               - wget [URL of appscan-cloud-cli jar]
+               - wget https://repo1.maven.org/maven2/com/hcl/appscan-cloud-cli/1.0.0/appscan-cloud-cli-1.0.0.jar
                - java -jar appscan-cloud-cli-1.0.0.jar invokedynamicscan --key=$STAGING_ASOC_KEY --secret=$STAGING_ASOC_KEY_SECRET --appId=<ASoC Application ID> --scanName=<Scan Name> --target=<Target URL>
         artifacts:
           files:
-            - '*/AppscanReports/*'
+            - 'AppscanReports/*'
           discard-paths: yes
         
         ~~~
         In your **buildspec.yml**, add the commands to download the AppScan CLI
-        tool and execute the security scan. See the commands in the above
+        jar from maven repository and execute the security scan. See the commands in the above
         buildspec example for reference. We assume the API Key ID and Secret are
         stored in the AWS System Manager Parameter Store. For more information
         on Full list of CLI commands and options, refer to the [HCL Appscan Cloud CLI Readme](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli).
