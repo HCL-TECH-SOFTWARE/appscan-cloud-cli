@@ -183,6 +183,9 @@ scan as part of the build process.
     -   Click on **Add action group** and choose \"AWS CodeBuild\" as
         the provider.
 
+        ![Add action group](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/ab32ce52-4315-4134-8804-0ba38945b705)
+
+
   
 7.  **Configure build action**:
 
