@@ -181,33 +181,37 @@ scan as part of the build process.
 
 
     -   Click on **Add action group** and choose \"AWS CodeBuild\" as
-        the provider.
+        the provider under Test action providers as shown below : 
 
         ![Add action group](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/ab32ce52-4315-4134-8804-0ba38945b705)
 
 
   
-7.  **Configure build action**:
+7.  **Configure test action**:
 
     -   Choose the CodeBuild project you created earlier (Part 1) step.
 
-    -   Set the appropriate action settings, including input artifacts.
+    -   Set the appropriate action settings, including output artifacts.
   
-      ![CodePipeline Add Action](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/20ce4be2-a088-468a-9aef-2a19fd1929d0)
+    ![CodePipeline Add Action](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/14e64af5-bb41-448b-a475-bbd5714183b6)
 
 
 
-8.  **Artifact stage** (Optional):
+
+9.  **Artifact stage** :
 
     -   Click on **Add stage**.
 
     -   Enter a name for the stage (e.g., \"Artifacts\").
 
-    -   Configure actions to deploy or store your build artifacts.
+    -   Configure actions to deploy or store your scan reports as shown below :
+      
+      ![Store Scan Reports](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/1a97b72c-44de-4375-a354-8e75f7ba4880)
 
-9.  Click on **Next** to review your pipeline configuration.
 
-10. Click on **Create pipeline** to create the CodePipeline.
+10.  Click on **Next** to review your pipeline configuration.
+
+11. Click on **Create pipeline** to create the CodePipeline.
 
 ### Step 2: Test CodePipeline Integration:
 
@@ -226,10 +230,9 @@ scan as part of the build process.
 
 
 5. The Scan Report would be available to download in format specified using --reportFormat or HTML format by default. This report includes only the non-compliant issues.
-   The Artifacts location can be configured in CodeBuild Project as discussed in earlier steps.
+   The report download location can be configured in CodePipeline Project as discussed in point 8 (Artifact Stage) in previous step.
    
-   ![Artifacts Location](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9937f84e-0013-413b-88d5-668c2bd68086)
-
+   ![Artifacts](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/f85a1802-9dc7-4418-86ea-60d1a7dc1ad7)
 
    
    ![Security Report](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9ebe7274-bd08-4258-89c3-7f088bb38023)
