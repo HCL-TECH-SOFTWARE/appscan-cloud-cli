@@ -197,8 +197,7 @@ scan as part of the build process.
 
 
 
-
-9.  **Artifact stage** :
+8.  **Artifact stage** :
 
     -   Click on **Add stage**.
 
@@ -209,9 +208,9 @@ scan as part of the build process.
       ![Store Scan Reports](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/1a97b72c-44de-4375-a354-8e75f7ba4880)
 
 
-10.  Click on **Next** to review your pipeline configuration.
+9.  Click on **Next** to review your pipeline configuration.
 
-11. Click on **Create pipeline** to create the CodePipeline.
+10. Click on **Create pipeline** to create the CodePipeline.
 
 ### Step 2: Test CodePipeline Integration:
 
