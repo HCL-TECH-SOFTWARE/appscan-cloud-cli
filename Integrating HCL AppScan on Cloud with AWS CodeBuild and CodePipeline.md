@@ -236,7 +236,7 @@ scan as part of the build process.
    
    ![Security Report](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/9ebe7274-bd08-4258-89c3-7f088bb38023)
     
-    **Note: The scan report and summary are available only if --waitForResult is set to true in appscan cloud cli command while confuring buildspec in CodeBuild. --waitForResult is by default set to true.
+    **Note: The scan report and summary are available only if --waitForResult is set to true in appscan cloud cli command while configuring buildspec.yaml file in a CodeBuild project. --waitForResult is by default set to true.
     The report and summary otherwise are available for download from HCL AppScan on Cloud.**
    
 ## Conclusion
