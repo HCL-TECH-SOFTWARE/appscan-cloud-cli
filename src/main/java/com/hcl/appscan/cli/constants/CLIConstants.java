@@ -24,5 +24,7 @@ public interface CLIConstants {
 	String REPORT_SUFFIX = "_report";
 	String SCAN_STATUS_READY = "Ready";
 	String SCAN_STATUS_COMPLETED = "Completed";
+	String APPSCAN_CLOUD_CLI="appscan-cloud-cli";
+	String AWS_CODEBUILD="aws-codebuild";
 
 }
