@@ -19,20 +19,18 @@
 package com.hcl.appscan.cli.auth;
 
 
-import com.hcl.appscan.cli.auth.Credentials;
+
 import com.hcl.appscan.cli.constants.CLIConstants;
-import com.hcl.appscan.cli.handlers.InvokeDynamicScan;
 import com.hcl.appscan.sdk.utils.SystemUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.hcl.appscan.cli.constants.ScannerConstants.CLIENT_TYPE;
 
 
 public class LoginUtility {
 
 	private static final Logger logger = LoggerFactory.getLogger(LoginUtility.class);
-	private static String CLIENT_TYPE;
+	private static String clientType;
 
 	public static Credentials getCredentialsObject(String key, String secret) {
 		return new Credentials(key, secret);
@@ -44,27 +42,28 @@ public class LoginUtility {
 
 	public static String getClientType() {
 		String productName = CLIConstants.APPSCAN_CLOUD_CLI;
-		if (CLIENT_TYPE == null) {
+		if (clientType == null) {
 			if (System.getenv().containsKey("CODEBUILD_CI") && System.getenv("CODEBUILD_CI").equals("true")) {
 				productName = CLIConstants.AWS_CODEBUILD;
 			}
 
 			String osName = System.getProperty("os.name");
 			String version = LoginUtility.class.getPackage().getImplementationVersion();
+			// If running in an IDE, the version might not be available
 			if (version == null) {
 				version = "dev";
 			}
 			osName = osName == null ? "" : osName.toLowerCase().trim().split(" ")[0];
 			if (productName.isBlank() && osName.isBlank())
-				CLIENT_TYPE = null;
+				clientType = null;
 			else{
-				CLIENT_TYPE = productName + "-" + osName + "-" + version.toLowerCase();
-				CLIENT_TYPE = CLIENT_TYPE.replaceAll("-snapshot$", "");
+				clientType = productName + "-" + osName + "-" + version.toLowerCase();
+				clientType = clientType.replaceAll("-snapshot$", "");
 			}
 
 		}
 
-		return CLIENT_TYPE;
+		return clientType;
 	}
 
 
