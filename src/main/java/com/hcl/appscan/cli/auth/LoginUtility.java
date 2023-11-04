@@ -41,29 +41,48 @@ public class LoginUtility {
 	}
 
 	public static String getClientType() {
-		String productName = CLIConstants.APPSCAN_CLOUD_CLI;
+		String clientName;
+		String version;
+		String osName;
 		if (clientType == null) {
-			if (System.getenv().containsKey("CODEBUILD_CI") && System.getenv("CODEBUILD_CI").equals("true")) {
-				productName = CLIConstants.AWS_CODEBUILD;
+			if (System.getenv().containsKey("APPSCAN_CLIENT") && !System.getenv("APPSCAN_CLIENT").isBlank()) {
+				clientName = System.getenv("APPSCAN_CLIENT");
+			}else{
+				//fallback to default clientName
+				clientName = CLIConstants.APPSCAN_CLOUD_CLI;
+			}
+			if (System.getenv().containsKey("APPSCAN_CLIENT_VERSION") && !System.getenv("APPSCAN_CLIENT_VERSION").isBlank() ) {
+				version = System.getenv("APPSCAN_CLIENT_VERSION");
+			}else{
+				//fallback to cli version
+				version = LoginUtility.class.getPackage().getImplementationVersion();
 			}
 
-			String osName = System.getProperty("os.name");
-			String version = LoginUtility.class.getPackage().getImplementationVersion();
 			// If running in an IDE, the version might not be available
 			if (version == null) {
 				version = "dev";
 			}
+			osName = System.getProperty("os.name");
 			osName = osName == null ? "" : osName.toLowerCase().trim().split(" ")[0];
-			if (productName.isBlank() && osName.isBlank())
+			if (clientName.isBlank() && osName.isBlank())
 				clientType = null;
 			else{
-				clientType = productName + "-" + osName + "-" + version.toLowerCase();
+				clientType = clientName + "-" + osName + "-" + version.toLowerCase();
 				clientType = clientType.replaceAll("-snapshot$", "");
 			}
 
 		}
+		return sanitizeClientType(clientType);
+	}
 
-		return clientType;
+	public static String sanitizeClientType(String clientType) {
+		if (clientType == null) {
+			return null;
+		}
+
+		String regex = "[^a-zA-Z0-9\\-._]";
+
+		return clientType.replaceAll(regex, "");
 	}
 
 
