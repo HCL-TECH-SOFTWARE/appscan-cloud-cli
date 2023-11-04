@@ -100,7 +100,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private String presenceId;
     private Boolean waitForResults;
     private Boolean failBuildNonCompliance;
-    private  File scanFile;
+    private  String scanFile;
     @Option(names = {"--loginType"},defaultValue = "None", description = "[Optional] Which Login method do you want to use? Enter None if login not required. Enter Automatic if you want to provide loginUser and password. Enter Manual if you want to specify Login Sequence File. Valid values : ${COMPLETION-CANDIDATES} ", required = false ,showDefaultValue = Visibility.ALWAYS , order = 15)
     private  LoginType loginType;
 
@@ -111,7 +111,12 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private File trafficFile;
 
     @Option(names = {"--scanFile"},  description = "[Optional] The path to a scan template file (.scan or .scant).", required = false ,showDefaultValue = Visibility.ALWAYS , order = 14)
-    public void setScanFile(File file) {
+    public void setScanFile(String filepath) {
+        if(null!=filepath && filepath.isBlank()){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.blank.scanfile")));
+        }
+        File file = new File(filepath);
         String value = file.getAbsolutePath();
         boolean invalid =  !value.trim().equals(EMPTY) && !value.endsWith(TEMPLATE_EXTENSION) && !value.endsWith(TEMPLATE_EXTENSION2) && !value.startsWith("${");
         if(!file.isFile()){
@@ -122,7 +127,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.scanfile"), value));
         }
-        scanFile = file;
+        scanFile = filepath;
     }
     @Option(names = {"--target"}, description = "[Required] Enter the URL from where you want the scan to start exploring the site.", required = true , order = 5)
     public void setTarget(String url){
@@ -390,7 +395,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         properties.put(CoreConstants.SERVER_URL, authHandler.getServer());
         properties.put(CoreConstants.ACCEPT_INVALID_CERTS, Boolean.toString(authHandler.getacceptInvalidCerts()));
         if(scanFile!=null)
-            properties.put(SCAN_FILE, scanFile.getAbsolutePath());
+            properties.put(SCAN_FILE, scanFile);
         if(presenceId!=null)
             properties.put(PRESENCE_ID, presenceId);
         if (System.getenv().containsKey("CODEBUILD_CI") && System.getenv("CODEBUILD_CI").equals("true")) {
