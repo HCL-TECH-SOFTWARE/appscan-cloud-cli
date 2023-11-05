@@ -480,8 +480,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     m_scanStatus=SCAN_STATUS_COMPLETED;
                 }
                 if (m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN)) {
-                    System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ] : Unable to reach AppScan on Cloud Servers. Please check your network settings!", m_scanStatus , "-" ,
-                            "-");
+                    System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus , "-" , "-");
                     requestCounter++;
                 }
                 else requestCounter = 0;
@@ -494,13 +493,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                         int minutes = duration / 60;
                         int remainingSeconds = duration % 60;
                         String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
-                        if(m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)){
-                            System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]"
-                                    , m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
-                        }else{
-                            System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]                                                                                "
-                                    , m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
-                        }
+                        System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
 
                     }
                 }
