@@ -34,6 +34,10 @@ public class CloudAuthenticationHandler implements IAuthenticationProvider, Seri
 	private static final Lock lock = new ReentrantLock();
 	private final CloudCredentials cloudCredentials;
 
+	public CloudCredentials getCloudCredentials() {
+		return cloudCredentials;
+	}
+
 	public CloudAuthenticationHandler() {
 		this.cloudCredentials = new CloudCredentials();
 	}

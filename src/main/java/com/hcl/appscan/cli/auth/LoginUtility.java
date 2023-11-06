@@ -19,11 +19,18 @@
 package com.hcl.appscan.cli.auth;
 
 
-import com.hcl.appscan.cli.auth.Credentials;
+
+import com.hcl.appscan.cli.constants.CLIConstants;
 import com.hcl.appscan.sdk.utils.SystemUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 public class LoginUtility {
+
+	private static final Logger logger = LoggerFactory.getLogger(LoginUtility.class);
+	private static String clientType;
 
 	public static Credentials getCredentialsObject(String key, String secret) {
 		return new Credentials(key, secret);
@@ -32,5 +39,47 @@ public class LoginUtility {
 	public static String getServer(String key) {
 		return SystemUtil.getServer((key == null ? "" : key));
 	}
+
+	public static String getClientType() {
+		String clientName;
+		String version;
+		String osName;
+		if (clientType == null) {
+			if (System.getenv().containsKey("APPSCAN_CLIENT") && !System.getenv("APPSCAN_CLIENT").isBlank()) {
+				clientName = System.getenv("APPSCAN_CLIENT");
+			}else{
+				//fallback to default clientName
+				clientName = CLIConstants.APPSCAN_CLOUD_CLI;
+			}
+			if (System.getenv().containsKey("APPSCAN_CLIENT_VERSION") && !System.getenv("APPSCAN_CLIENT_VERSION").isBlank() ) {
+				version = System.getenv("APPSCAN_CLIENT_VERSION");
+			}else{
+				//fallback to cli version
+				version = LoginUtility.class.getPackage().getImplementationVersion();
+			}
+
+			// If running in an IDE, the version might not be available
+			if (version == null) {
+				version = "dev";
+			}
+			osName = System.getProperty("os.name");
+			osName = osName == null ? "" : osName.toLowerCase().trim().split(" ")[0];
+			clientType = clientName + "-" + osName + "-" + version.toLowerCase();
+			clientType = clientType.replaceAll("-snapshot$", "");
+			
+		}
+		return sanitizeClientType(clientType);
+	}
+
+	public static String sanitizeClientType(String clientType) {
+		if (clientType == null) {
+			return null;
+		}
+
+		String regex = "[^a-zA-Z0-9\\-._]";
+
+		return clientType.replaceAll(regex, "");
+	}
+
 
 }

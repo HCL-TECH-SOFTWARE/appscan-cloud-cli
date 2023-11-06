@@ -27,6 +27,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class CloudCredentials implements Serializable {
 	private static final Lock lock = new ReentrantLock();
 
+	public CloudCredentials() {
+		this.clientType = LoginUtility.getClientType();
+	}
+
 	public Credentials getCredentials() {
 		return credentials;
 	}

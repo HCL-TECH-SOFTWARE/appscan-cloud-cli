@@ -19,6 +19,7 @@
 package com.hcl.appscan.cli.handlers;
 
 import com.hcl.appscan.cli.auth.CloudAuthenticationHandler;
+import com.hcl.appscan.cli.auth.LoginUtility;
 import com.hcl.appscan.cli.constants.ScannerConstants;
 import com.hcl.appscan.cli.exception.AbortException;
 import com.hcl.appscan.cli.results.ScanProgress;
@@ -27,8 +28,6 @@ import com.hcl.appscan.cli.scanners.DynamicAnalyzer;
 import com.hcl.appscan.cli.scanners.Scanner;
 import com.hcl.appscan.cli.scanners.ValidationUtil;
 import com.hcl.appscan.sdk.CoreConstants;
-import com.hcl.appscan.sdk.error.InvalidTargetException;
-import com.hcl.appscan.sdk.error.ScannerException;
 import com.hcl.appscan.sdk.logging.IProgress;
 import com.hcl.appscan.sdk.logging.Message;
 import com.hcl.appscan.sdk.presence.CloudPresenceProvider;
@@ -39,26 +38,19 @@ import com.hcl.appscan.sdk.scan.IScanFactory;
 import com.hcl.appscan.sdk.scan.IScanServiceProvider;
 import com.hcl.appscan.sdk.scanners.ScanConstants;
 import com.hcl.appscan.sdk.scanners.dynamic.DASTScanFactory;
-import com.hcl.appscan.sdk.utils.FileUtil;
-import com.hcl.appscan.sdk.utils.ServiceUtil;
 import com.hcl.appscan.sdk.utils.SystemUtil;
 import org.apache.wink.json4j.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
-
 import static com.hcl.appscan.cli.constants.CLIConstants.*;
 import static com.hcl.appscan.cli.constants.ScannerConstants.*;
-import static java.io.File.pathSeparator;
 import static java.io.File.separator;
 import static picocli.CommandLine.*;
 import static picocli.CommandLine.Help.*;
@@ -284,6 +276,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
         try {
             boolean isAuthenticated = authHandler.updateCredentials(key, secret);
+
             if(!isAuthenticated) {
                 throw new ParameterException(spec.commandLine(),
                         String.format(messageBundle.getString("error.invalid.credentials")));
@@ -393,13 +386,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             properties.put(SCAN_FILE, scanFile.getAbsolutePath());
         if(presenceId!=null)
             properties.put(PRESENCE_ID, presenceId);
-        if (System.getenv().containsKey("CODEBUILD_CI") && System.getenv("CODEBUILD_CI").equals("true")) {
-            logger.info("Detected ClientType : AWS CodeBuild CLI");
-            properties.put(CLIENT_TYPE, "AWS CodeBuild CLI");
-        }else{
-            properties.put(CLIENT_TYPE, "AppScan Cloud CLI");
-        }
-
+        properties.put(CLIENT_TYPE, LoginUtility.getClientType());
         return properties;
 
     }
