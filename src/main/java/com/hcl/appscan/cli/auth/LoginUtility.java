@@ -64,13 +64,9 @@ public class LoginUtility {
 			}
 			osName = System.getProperty("os.name");
 			osName = osName == null ? "" : osName.toLowerCase().trim().split(" ")[0];
-			if (clientName.isBlank() && osName.isBlank())
-				clientType = null;
-			else{
-				clientType = clientName + "-" + osName + "-" + version.toLowerCase();
-				clientType = clientType.replaceAll("-snapshot$", "");
-			}
-
+			clientType = clientName + "-" + osName + "-" + version.toLowerCase();
+			clientType = clientType.replaceAll("-snapshot$", "");
+			
 		}
 		return sanitizeClientType(clientType);
 	}
