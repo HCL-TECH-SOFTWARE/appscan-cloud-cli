@@ -32,7 +32,7 @@
     <asciidoctorj.pdf.version>2.3.9</asciidoctorj.pdf.version>
     <asciidoctorj.version>2.5.10</asciidoctorj.version>
     <picoli.version>4.7.5</picoli.version>
-    <appscan.sdk.version>1.0.36</appscan.sdk.version>
+    <appscan.sdk.version>1.0.37-SNAPSHOT</appscan.sdk.version>
     <logback.classic.version>1.4.8</logback.classic.version>
     <jansi.version>2.4.0</jansi.version>
     <picoli.codegen.version>4.7.5</picoli.codegen.version>
