@@ -314,23 +314,27 @@ public class InvokeDynamicScan implements Callable<Integer> {
             }
         }
         Optional<ScanResults> results = Optional.empty();
+        IScan scan = null;
+        CloudResultsProvider resultsProvider = null;
         try {
             IProgress progress = new ScanProgress();
-            final IScan scan = getScan(authHandler, progress);
+            scan = getScan(authHandler, progress);
             scan.run();
             if(!waitForResults){
                 return results;
             }
-            CloudResultsProvider resultsProvider = new NonCompliantIssuesResultProvider(scan.getScanId(), scan.getType(), scan.getServiceProvider(), progress);
+            resultsProvider = new NonCompliantIssuesResultProvider(scan.getScanId(), scan.getType(), scan.getServiceProvider(), progress);
             results = getScanResults(scan, progress, authHandler, resultsProvider);
-            processScanResults(results,resultsProvider,scan);
-            getScanLogs(scan , resultsProvider);
-        }catch (ParameterException pe){
+            processScanResults(results, resultsProvider, scan);
+
+        } catch (ParameterException pe) {
             throw pe;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error(e.getMessage());
             throw e;
+        } finally {
+            if(null!=scan && null!=resultsProvider)
+                getScanLogs(scan, resultsProvider);
         }
         return results;
     }
@@ -559,17 +563,22 @@ public class InvokeDynamicScan implements Callable<Integer> {
         logger.info("Downloading Scan Logs. Please wait...");
         Callable<String> downloadScanLogTask = () -> {
             String cwd = Path.of("").toAbsolutePath().toString();
-            String baseDir = cwd+separator+messageBundle.getString("scanlog.download.location");
+            String baseDir = cwd+separator+messageBundle.getString("report.download.location");
             String fileName = "ScanLog" + "_" + SystemUtil.getTimeStamp() + "." + "zip";
             File scanLogFile = new File(baseDir ,fileName);
             resultsProvider.getScanLogFile(scanLogFile,executionId);
-            String scanLogFilePath = scanLogFile.getAbsolutePath();
-            return "ScanLog File downloaded successfully. Download location - " + scanLogFilePath;
+            if(scanLogFile.isFile()){
+                String scanLogFilePath = scanLogFile.getAbsolutePath();
+                return "ScanLog File downloaded successfully. Download location - " + scanLogFilePath;
+            }else{
+                return "ScanLog File is not available for this Scan";
+            }
+
         };
         try {
             Future<String> future = executor.submit(downloadScanLogTask);
-            String reportDownloadResult = future.get(90, TimeUnit.SECONDS);
-            logger.info(reportDownloadResult);
+            String scanLogDownloadStatus = future.get(90, TimeUnit.SECONDS);
+            logger.info(scanLogDownloadStatus);
         } catch (TimeoutException e) {
             logger.error("Unable to download the scan log. Operation timed out!");
         } catch (Exception e) {
