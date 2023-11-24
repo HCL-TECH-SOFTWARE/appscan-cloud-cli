@@ -47,7 +47,7 @@ Usage:  invokedynamicscan [-hV] [--allowIntervention]
                                  [--scanFile=<scanFile>] --scanName=<scanName>
                                  [--scanType=<scanType>] --secret=<secret>
                                  --target=<target>
-                                 [--trafficFile=<trafficFile>] [COMMAND]
+                                 [--trafficFile / --loginSequenceFile=<loginSequenceFile>] [COMMAND]
 
 Options:
   -h, --help                Show this help message and exit.
@@ -113,7 +113,7 @@ Options:
                             [Optional] If your app requires login, enter valid
                               user credentials so that Application Security on
                               Cloud can log in to the site.
-      --trafficFile=<trafficFile>
+      --trafficFile, --loginSequenceFile=<loginSequenceFile>
                             [Optional] Provide a path to the login sequence
                               file data. Supported file type: CONFIG: AppScan
                               Activity Recorder file.
