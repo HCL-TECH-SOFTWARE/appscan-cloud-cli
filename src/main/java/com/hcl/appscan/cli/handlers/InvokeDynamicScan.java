@@ -181,7 +181,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         emailNotification = Boolean.parseBoolean(value);
     }
 
-    @Option(names = {"--loginSequenceFile","--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
+    @Option(names = {"--loginSequenceFile","--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file. Deprecation Notice: Option --trafficFile is deprecated; please use Option --loginSequenceFile for future compatibility.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
     public void setLoginSequenceFile(File file) {
 
         if (RECORDED.equalsIgnoreCase(String.valueOf(loginType))) {
