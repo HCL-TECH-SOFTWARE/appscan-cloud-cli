@@ -100,7 +100,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private String loginUser;
     @Option(names = {"--loginPassword"}, description = "[Optional] If your app requires login, enter valid user credentials so that Application Security on Cloud can log in to the site.", required = false , order = 17)
     private String loginPassword;
-    private File trafficFile;
+    private File loginSequenceFile;
 
     @Option(names = {"--scanFile"},  description = "[Optional] The path to a scan template file (.scan or .scant).", required = false ,showDefaultValue = Visibility.ALWAYS , order = 14)
     public void setScanFile(String filepath) {
@@ -181,8 +181,8 @@ public class InvokeDynamicScan implements Callable<Integer> {
         emailNotification = Boolean.parseBoolean(value);
     }
 
-    @Option(names = {"--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
-    public void setTrafficFile(File file) {
+    @Option(names = {"--loginSequenceFile","--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file. Deprecation Notice: Option --trafficFile is deprecated; please use Option --loginSequenceFile for future compatibility.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
+    public void setLoginSequenceFile(File file) {
 
         if (RECORDED.equalsIgnoreCase(String.valueOf(loginType))) {
             if(null==file){
@@ -196,7 +196,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             }
         }
 
-        trafficFile = file;
+        loginSequenceFile = file;
     }
 
     @Override
@@ -410,8 +410,8 @@ public class InvokeDynamicScan implements Callable<Integer> {
             m_scanner.setLoginPassword(loginPassword);
         } else if(loginType.equals(LoginType.Manual)){
              m_scanner.setLoginType(RECORDED);
-             if(trafficFile!=null){
-                 m_scanner.setTrafficFile(trafficFile.getAbsolutePath());
+             if(loginSequenceFile !=null){
+                 m_scanner.setTrafficFile(loginSequenceFile.getAbsolutePath());
              }
         } else{
             m_scanner.setLoginType(NONE);
