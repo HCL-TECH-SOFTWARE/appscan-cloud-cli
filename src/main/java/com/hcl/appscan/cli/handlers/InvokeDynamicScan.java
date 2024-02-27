@@ -486,12 +486,15 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 if(!CoreConstants.FAILED.equalsIgnoreCase(m_scanStatus) && !CoreConstants.UNKNOWN.equalsIgnoreCase(m_scanStatus) ){
                     JSONObject scanSummary = scanServiceProvider.getScanDetails(scan.getScanId());
                     if(null!=scanSummary){
-                        JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
-                        int duration = latestExecution.getInt("ExecutionDurationSec");
-                        int minutes = duration / 60;
-                        int remainingSeconds = duration % 60;
-                        String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
-                        System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
+                        if(scanSummary.has("LatestExecution")){
+                            JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
+                            int duration = latestExecution.getInt("ExecutionDurationSec");
+                            int minutes = duration / 60;
+                            int remainingSeconds = duration % 60;
+                            String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
+                            System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
+
+                        }
 
                     }
                 }
