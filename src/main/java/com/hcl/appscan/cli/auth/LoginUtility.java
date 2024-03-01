@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2023 HCL America, Inc.
+ * Copyright 2023,2024 HCL America, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class LoginUtility {
 			osName = System.getProperty("os.name");
 			osName = osName == null ? "" : osName.toLowerCase().trim().split(" ")[0];
 			clientType = clientName + "-" + osName + "-" + version.toLowerCase();
-			clientType = clientType.replaceAll("-snapshot$", "");
+			
 			
 		}
 		return sanitizeClientType(clientType);
