@@ -31,6 +31,7 @@ import com.hcl.appscan.sdk.CoreConstants;
 import com.hcl.appscan.sdk.logging.IProgress;
 import com.hcl.appscan.sdk.logging.Message;
 import com.hcl.appscan.sdk.presence.CloudPresenceProvider;
+import com.hcl.appscan.sdk.results.CloudResultsProvider;
 import com.hcl.appscan.sdk.results.IResultsProvider;
 import com.hcl.appscan.sdk.results.NonCompliantIssuesResultProvider;
 import com.hcl.appscan.sdk.scan.IScan;
@@ -39,6 +40,7 @@ import com.hcl.appscan.sdk.scan.IScanServiceProvider;
 import com.hcl.appscan.sdk.scanners.ScanConstants;
 import com.hcl.appscan.sdk.scanners.dynamic.DASTScanFactory;
 import com.hcl.appscan.sdk.utils.SystemUtil;
+import org.apache.wink.json4j.JSONException;
 import org.apache.wink.json4j.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +102,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private String loginUser;
     @Option(names = {"--loginPassword"}, description = "[Optional] If your app requires login, enter valid user credentials so that Application Security on Cloud can log in to the site.", required = false , order = 17)
     private String loginPassword;
-    private File trafficFile;
+    private File loginSequenceFile;
 
     @Option(names = {"--scanFile"},  description = "[Optional] The path to a scan template file (.scan or .scant).", required = false ,showDefaultValue = Visibility.ALWAYS , order = 14)
     public void setScanFile(String filepath) {
@@ -181,8 +183,8 @@ public class InvokeDynamicScan implements Callable<Integer> {
         emailNotification = Boolean.parseBoolean(value);
     }
 
-    @Option(names = {"--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
-    public void setTrafficFile(File file) {
+    @Option(names = {"--loginSequenceFile","--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file. Deprecation Notice: Option --trafficFile is deprecated; please use Option --loginSequenceFile for future compatibility.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
+    public void setLoginSequenceFile(File file) {
 
         if (RECORDED.equalsIgnoreCase(String.valueOf(loginType))) {
             if(null==file){
@@ -196,7 +198,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             }
         }
 
-        trafficFile = file;
+        loginSequenceFile = file;
     }
 
     @Override
@@ -312,23 +314,27 @@ public class InvokeDynamicScan implements Callable<Integer> {
             }
         }
         Optional<ScanResults> results = Optional.empty();
+        IScan scan = null;
+        CloudResultsProvider resultsProvider = null;
         try {
             IProgress progress = new ScanProgress();
-            final IScan scan = getScan(authHandler, progress);
+            scan = getScan(authHandler, progress);
             scan.run();
             if(!waitForResults){
                 return results;
             }
-            IResultsProvider resultsProvider = new NonCompliantIssuesResultProvider(scan.getScanId(), scan.getType(), scan.getServiceProvider(), progress);
+            resultsProvider = new NonCompliantIssuesResultProvider(scan.getScanId(), scan.getType(), scan.getServiceProvider(), progress);
             results = getScanResults(scan, progress, authHandler, resultsProvider);
-            processScanResults(results,resultsProvider,scan);
+            processScanResults(results, resultsProvider, scan);
 
-        }catch (ParameterException pe){
+        } catch (ParameterException pe) {
             throw pe;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error(e.getMessage());
             throw e;
+        } finally {
+            if(null!=scan && null!=resultsProvider)
+                getScanLogs(scan, resultsProvider);
         }
         return results;
     }
@@ -410,8 +416,8 @@ public class InvokeDynamicScan implements Callable<Integer> {
             m_scanner.setLoginPassword(loginPassword);
         } else if(loginType.equals(LoginType.Manual)){
              m_scanner.setLoginType(RECORDED);
-             if(trafficFile!=null){
-                 m_scanner.setTrafficFile(trafficFile.getAbsolutePath());
+             if(loginSequenceFile !=null){
+                 m_scanner.setTrafficFile(loginSequenceFile.getAbsolutePath());
              }
         } else{
             m_scanner.setLoginType(NONE);
@@ -480,12 +486,15 @@ public class InvokeDynamicScan implements Callable<Integer> {
                 if(!CoreConstants.FAILED.equalsIgnoreCase(m_scanStatus) && !CoreConstants.UNKNOWN.equalsIgnoreCase(m_scanStatus) ){
                     JSONObject scanSummary = scanServiceProvider.getScanDetails(scan.getScanId());
                     if(null!=scanSummary){
-                        JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
-                        int duration = latestExecution.getInt("ExecutionDurationSec");
-                        int minutes = duration / 60;
-                        int remainingSeconds = duration % 60;
-                        String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
-                        System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
+                        if(scanSummary.has("LatestExecution")){
+                            JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
+                            int duration = latestExecution.getInt("ExecutionDurationSec");
+                            int minutes = duration / 60;
+                            int remainingSeconds = duration % 60;
+                            String formattedDuration = String.format("%02dm %02ds", minutes, remainingSeconds);
+                            System.out.printf("\rScan Status : %s [ Duration : %s , Requests Sent : %s ]", m_scanStatus ,formattedDuration, latestExecution.getString("Progress"));
+
+                        }
 
                     }
                 }
@@ -546,6 +555,41 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     public static Map<String, String> getPresenceDetails(CloudAuthenticationHandler authHandler , String presenceId) throws Exception {
         return new CloudPresenceProvider(authHandler).getDetails(presenceId);
+    }
+
+    private void getScanLogs(IScan scan , CloudResultsProvider resultsProvider ) throws JSONException, IOException {
+        IScanServiceProvider scanServiceProvider = scan.getServiceProvider();
+        JSONObject scanSummary = scanServiceProvider.getScanDetails(scan.getScanId());
+        JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
+        String executionId = latestExecution.getString("Id");
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        logger.info("Downloading Scan Logs. Please wait...");
+        Callable<String> downloadScanLogTask = () -> {
+            String cwd = Path.of("").toAbsolutePath().toString();
+            String baseDir = cwd+separator+messageBundle.getString("report.download.location");
+            String fileName = "ScanLog" + "_" + SystemUtil.getTimeStamp() + "." + "zip";
+            File scanLogFile = new File(baseDir ,fileName);
+            resultsProvider.getScanLogFile(scanLogFile,executionId);
+            if(scanLogFile.isFile()){
+                String scanLogFilePath = scanLogFile.getAbsolutePath();
+                return "ScanLog File downloaded successfully. Download location - " + scanLogFilePath;
+            }else{
+                return "ScanLog File is not available for this Scan";
+            }
+
+        };
+        try {
+            Future<String> future = executor.submit(downloadScanLogTask);
+            String scanLogDownloadStatus = future.get(90, TimeUnit.SECONDS);
+            logger.info(scanLogDownloadStatus);
+        } catch (TimeoutException e) {
+            logger.error("Unable to download the scan log. Operation timed out!");
+        } catch (Exception e) {
+            logger.error("Caught Exception while downloading the scan log : Error - "+ e.getMessage());
+        } finally {
+            executor.shutdown();
+        }
+
     }
 
 }
