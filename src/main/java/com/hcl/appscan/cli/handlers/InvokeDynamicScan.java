@@ -558,10 +558,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
     }
 
     private void getScanLogs(IScan scan , CloudResultsProvider resultsProvider ) throws JSONException, IOException {
-        IScanServiceProvider scanServiceProvider = scan.getServiceProvider();
-        JSONObject scanSummary = scanServiceProvider.getScanDetails(scan.getScanId());
-        JSONObject latestExecution = scanSummary.getJSONObject("LatestExecution");
-        String executionId = latestExecution.getString("Id");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         logger.info("Downloading Scan Logs. Please wait...");
         Callable<String> downloadScanLogTask = () -> {
@@ -569,7 +565,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             String baseDir = cwd+separator+messageBundle.getString("report.download.location");
             String fileName = "ScanLog" + "_" + SystemUtil.getTimeStamp() + "." + "zip";
             File scanLogFile = new File(baseDir ,fileName);
-            resultsProvider.getScanLogFile(scanLogFile,executionId);
+            resultsProvider.getScanLogFile(scanLogFile,scan.getScanId());
             if(scanLogFile.isFile()){
                 String scanLogFilePath = scanLogFile.getAbsolutePath();
                 return "ScanLog File downloaded successfully. Download location - " + scanLogFilePath;
