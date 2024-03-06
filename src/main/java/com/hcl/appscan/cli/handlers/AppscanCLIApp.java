@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2023 HCL America, Inc.
+ * Copyright 2023,2024 HCL America, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,7 @@ import static picocli.CommandLine.Help.Ansi.Style.italic;
         header = "HCL AppScan CLI Utility to streamline Dynamic Application Security Testing.",
         description = "The HCL AppScan command-line utility (CLI) is designed to streamline Dynamic Application Security Testing within a Continuous Integration and Continuous Deployment (CICD) environment. This tool can be seamlessly integrated into any CICD platform or used independently." ,
         optionListHeading = "%n@|bold,underline Options|@:%n" ,
-        descriptionHeading = "%n@|bold,underline Description|@:%n%n",
-        footer = "Copyright 2023 HCL America, Inc."
+        descriptionHeading = "%n@|bold,underline Description|@:%n%n"
 )
 public class AppscanCLIApp implements Runnable {
     public static void main(String[] args) {
