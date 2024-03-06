@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2023 HCL America, Inc.
+ * Copyright 2023,2024 HCL America, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.*;
 
 @Command(name = "getapplications" , sortOptions = false, mixinStandardHelpOptions = true , subcommands = {HelpCommand.class} ,
-        description ="Get list of application id's from AppScan on Cloud" , footer = "Copyright 2023 HCL America, Inc."
+        description ="Get list of application id's from AppScan on Cloud"
 )
 public class GetApplicationIds implements Callable<Integer> {
 
