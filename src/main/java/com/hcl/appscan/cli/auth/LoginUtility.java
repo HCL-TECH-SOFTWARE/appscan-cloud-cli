@@ -37,7 +37,8 @@ public class LoginUtility {
 	}
 
 	public static String getServer(String key) {
-		return SystemUtil.getServer((key == null ? "" : key));
+		String url =  SystemUtil.getServer((key == null ? "" : key));
+		return url.endsWith("/") ? url.substring(0, url.length()-1) : url;
 	}
 
 	public static String getClientType() {
