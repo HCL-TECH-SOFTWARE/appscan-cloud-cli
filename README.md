@@ -124,7 +124,7 @@ Options:
                               Default: null
 Example:
 java -jar appscan-cloud-cli-1.1.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
---appId=your_asoc_appp_id --scanName=test_scan --target==https://demo.testfire.net
+--appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net
 
 Commands:
   help         Display help information about the specified command.
