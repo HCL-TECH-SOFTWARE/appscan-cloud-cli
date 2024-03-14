@@ -518,7 +518,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     ", Scan Name: " + scan.getName())));
 
         } else if (CoreConstants.UNKNOWN.equalsIgnoreCase(m_scanStatus)) {
-            progress.setStatus(new Message(Message.ERROR, messageBundle.getString("error.unexpected")));
+
             logger.error(messageBundle.getString("error.unexpected"));
 
         } else {
@@ -563,7 +563,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         Callable<String> downloadScanLogTask = () -> {
             String cwd = Path.of("").toAbsolutePath().toString();
             String baseDir = cwd+separator+messageBundle.getString("report.download.location");
-            String fileName = "ScanLog" + "_" + SystemUtil.getTimeStamp() + "." + "zip";
+            String fileName = "ScanLog" + "_" +  SystemUtil.getTimeStamp() + "." + "zip";
             File scanLogFile = new File(baseDir ,fileName);
             resultsProvider.getScanLogFile(scanLogFile,scan.getScanId());
             if(scanLogFile.isFile()){
