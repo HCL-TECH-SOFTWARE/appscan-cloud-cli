@@ -563,7 +563,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         Callable<String> downloadScanLogTask = () -> {
             String cwd = Path.of("").toAbsolutePath().toString();
             String baseDir = cwd+separator+messageBundle.getString("report.download.location");
-            String fileName = "ScanLog" + "_" +  SystemUtil.getTimeStamp() + "." + "zip";
+            String fileName = "ScanLog" + "_" + SystemUtil.getTimeStamp() + "." + "zip";
             File scanLogFile = new File(baseDir ,fileName);
             resultsProvider.getScanLogFile(scanLogFile,scan.getScanId());
             if(scanLogFile.isFile()){
