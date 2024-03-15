@@ -518,7 +518,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     ", Scan Name: " + scan.getName())));
 
         } else if (CoreConstants.UNKNOWN.equalsIgnoreCase(m_scanStatus)) {
-
             logger.error(messageBundle.getString("error.unexpected"));
 
         } else {
