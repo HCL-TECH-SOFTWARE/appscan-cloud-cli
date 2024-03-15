@@ -229,7 +229,7 @@ scan as part of the build process.
 
 
 5. The Scan Report would be available to download in format specified using --reportFormat or HTML format by default. This report includes only the non-compliant issues.
-   The report download location can be configured in CodePipeline Project as discussed in point 8 (Artifact Stage) in previous step.
+   The report download location can be configured in CodePipeline Project in Bucket field as discussed in point 8 (Artifact Stage) in previous step.
    
    ![Artifacts](https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli/assets/141301853/f85a1802-9dc7-4418-86ea-60d1a7dc1ad7)
 
