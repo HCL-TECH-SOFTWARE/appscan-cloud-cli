@@ -27,11 +27,15 @@ Usage:  getapplications [-hV] --key=<key> --secret=<secret> [COMMAND]
       --secret=<secret>   [Required] Appscan on Cloud API Secret
 Commands:
   help : Display help information about the specified command
+
+Example:
+java -jar appscan-cloud-cli-1.1.0.jar getapplications --key=your_api_key --secret=your_api_secret
+
 ~~~
 
 ### invokedynamicscan
 
-This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner.
+This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner. Once the scan is completed , both scan report and scan log zip file would be downloaded in AppscanReports folder.  
 
 ~~~bash  
 Usage:  invokedynamicscan [-hV] [--allowIntervention]
@@ -118,6 +122,10 @@ Options:
                               file data. Supported file type: CONFIG: AppScan
                               Activity Recorder file.
                               Default: null
+Example:
+java -jar appscan-cloud-cli-1.1.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
+--appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net
+
 Commands:
   help         Display help information about the specified command.
   failbuildif  [Optional] A list of conditions that will fail the build. These
@@ -146,6 +154,10 @@ Commands:
         -ti, --totalissuesgt=<arg0> 
 
           Fail build if total issues are greater than 
+          
+Example:
+java -jar appscan-cloud-cli-1.1.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
+--appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10        
 ~~~
 
 ### getpresenceids
@@ -159,6 +171,9 @@ Get list of presence id's from Appscan on Cloud
   -V, --version           Print version information and exit.
       --key=<key>         [Required] Appscan on Cloud API Key
       --secret=<secret>   [Required] Appscan on Cloud API Secret
+Example:
+java -jar appscan-cloud-cli-1.1.0.jar getpresenceids --key=your_api_key --secret=your_api_secret
+
 ~~~
 
 ### help
