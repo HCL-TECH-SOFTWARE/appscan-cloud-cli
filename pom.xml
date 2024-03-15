@@ -60,7 +60,6 @@
       <version>${jansi.version}</version>
     </dependency>
 
-
   </dependencies>
   <build>
     <plugins>
@@ -238,7 +237,6 @@
               <goals>deploy</goals>
             </configuration>
           </plugin>
-
         </plugins>
       </build>
     </profile>
