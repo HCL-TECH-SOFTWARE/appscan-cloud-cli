@@ -33,7 +33,7 @@
     <asciidoctorj.version>2.5.10</asciidoctorj.version>
     <picoli.version>4.7.5</picoli.version>
     <appscan.sdk.version>1.1.0</appscan.sdk.version>
-    <logback.classic.version>1.4.12</logback.classic.version>
+    <logback.classic.version>1.4.14</logback.classic.version>
     <jansi.version>2.4.0</jansi.version>
     <picoli.codegen.version>4.7.5</picoli.codegen.version>
   </properties>
@@ -60,6 +60,7 @@
       <version>${jansi.version}</version>
     </dependency>
 
+
   </dependencies>
   <build>
     <plugins>
@@ -74,6 +75,11 @@
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.hcl.security</groupId>
+        <artifactId>appscan-maven-plugin</artifactId>
+        <version>1.0.13</version>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -237,6 +243,7 @@
               <goals>deploy</goals>
             </configuration>
           </plugin>
+
         </plugins>
       </build>
     </profile>
