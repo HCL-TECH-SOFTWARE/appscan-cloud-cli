@@ -27,6 +27,10 @@ Usage:  getapplications [-hV] --key=<key> --secret=<secret> [COMMAND]
       --secret=<secret>   [Required] Appscan on Cloud API Secret
 Commands:
   help : Display help information about the specified command
+
+Example:
+java -jar appscan-cloud-cli-1.1.0.jar getapplications --key=your_api_key --secret=your_api_secret
+
 ~~~
 
 ### invokedynamicscan
@@ -118,6 +122,10 @@ Options:
                               file data. Supported file type: CONFIG: AppScan
                               Activity Recorder file.
                               Default: null
+Example:
+java -jar appscan-cloud-cli-1.1.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
+--appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net
+
 Commands:
   help         Display help information about the specified command.
   failbuildif  [Optional] A list of conditions that will fail the build. These
@@ -159,6 +167,9 @@ Get list of presence id's from Appscan on Cloud
   -V, --version           Print version information and exit.
       --key=<key>         [Required] Appscan on Cloud API Key
       --secret=<secret>   [Required] Appscan on Cloud API Secret
+Example:
+java -jar appscan-cloud-cli-1.1.0.jar getpresenceids --key=your_api_key --secret=your_api_secret
+
 ~~~
 
 ### help
