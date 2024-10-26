@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.*;
@@ -34,13 +35,30 @@ import static picocli.CommandLine.*;
 public class GetPresenceIds implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(GetPresenceIds.class);
+    @Spec
+    Model.CommandSpec spec;
 
+    ResourceBundle messageBundle = ResourceBundle.getBundle("messages");
     @Option(names = {"--key"}, description = "[Required] AppScan on Cloud API Key", required = true , order = 1)
     private String key;
     @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud API Secret", required = true , order = 2)
     private String secret;
 
+    @Option(names = {"--serviceUrl"}, description = "[Required] AppScan Service URL", required = false , order = 3)
+    private String serviceUrl;
 
+    private Boolean allowUntrusted;
+
+    @Option(names = {"--allowUntrusted"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Set to true to enable untrusted connection to AppScan 360° service", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 4)
+    public void setAllowUntrusted(String value) {
+        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
+
+        if (invalid) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.allowUntrusted"), value));
+        }
+        allowUntrusted = Boolean.parseBoolean(value);
+    }
     @Override
     public Integer call() {
         try{
@@ -53,6 +71,11 @@ public class GetPresenceIds implements Callable<Integer> {
 
     private void printPresenceIdList() throws Exception {
         CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
+        if(null!=serviceUrl){
+            authHandler = new CloudAuthenticationHandler(serviceUrl , allowUntrusted);
+        }else{
+            authHandler = new CloudAuthenticationHandler();
+        }
         try {
             authHandler.updateCredentials(key, secret);
         } catch (Exception e) {

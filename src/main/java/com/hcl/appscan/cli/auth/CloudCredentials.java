@@ -27,8 +27,19 @@ import java.util.concurrent.locks.ReentrantLock;
 public class CloudCredentials implements Serializable {
 	private static final Lock lock = new ReentrantLock();
 
-	public CloudCredentials() {
+	private String serviceUrl;
+
+	public boolean m_acceptInvalidCerts;
+
+	public CloudCredentials(boolean acceptInvalidCerts) {
 		this.clientType = LoginUtility.getClientType();
+		m_acceptInvalidCerts=acceptInvalidCerts;
+	}
+
+	public CloudCredentials(String serviceUrl , boolean acceptInvalidCerts) {
+		this.clientType = LoginUtility.getClientType();
+		this.serviceUrl = serviceUrl;
+		m_acceptInvalidCerts=acceptInvalidCerts;
 	}
 
 	public Credentials getCredentials() {
@@ -45,6 +56,9 @@ public class CloudCredentials implements Serializable {
 
 
 	public String getServer() {
+		if(this.serviceUrl!=null){
+			return  serviceUrl;
+		}
 		return LoginUtility.getServer(getKey());
 	}
 
@@ -78,5 +92,9 @@ public class CloudCredentials implements Serializable {
 
 	public void setClientType(String clientType) {
 		this.clientType = clientType;
+	}
+
+	public boolean getacceptInvalidCerts() {
+		return m_acceptInvalidCerts;
 	}
 }

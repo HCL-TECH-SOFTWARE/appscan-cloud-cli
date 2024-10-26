@@ -26,9 +26,14 @@ import org.apache.wink.json4j.JSONArtifact;
 import org.apache.wink.json4j.JSONException;
 import org.apache.wink.json4j.JSONObject;
 
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.net.URL;
 
@@ -82,10 +87,14 @@ public class ValidationUtil implements CoreConstants {
 		return false;
 	}
 
-	public static boolean checkASoCConnectivity(String urlString) {
+	public static boolean checkASoCConnectivity(String urlString,boolean allowUntrusted) {
 		try {
 			URL url = new URL(urlString);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+			if((connection != null) && allowUntrusted) {
+				bypassSSL((HttpsURLConnection)connection);
+			}
+			assert connection != null;
 			connection.setRequestMethod("HEAD"); // Using the HEAD request method for a faster check
 			int responseCode = connection.getResponseCode();
 
@@ -99,5 +108,42 @@ public class ValidationUtil implements CoreConstants {
 			// Ignore and return false.
 		}
 		return false;
+	}
+
+	private static void bypassSSL(HttpsURLConnection conn)  {
+		conn.setHostnameVerifier(new HostnameVerifier() {
+			@Override
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		});
+
+		TrustManager[] trustManagers = new TrustManager[] { new X509TrustManager() {
+
+			private X509Certificate[] x509Certificates = new X509Certificate[0];
+
+			@Override
+			public X509Certificate[] getAcceptedIssuers() {
+				return x509Certificates;
+			}
+
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+				// do nothing
+			}
+
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+				// do nothing
+			}
+		}};
+
+		try {
+			SSLContext context = SSLContext.getInstance("TLSv1.2"); //$NON-NLS-1$
+			context.init(null, trustManagers, null);
+			conn.setSSLSocketFactory(context.getSocketFactory());
+		} catch (NoSuchAlgorithmException | KeyManagementException e) {
+			//Ignore. The connection should fail.
+		}
 	}
 }

@@ -29,7 +29,6 @@ import com.hcl.appscan.cli.scanners.Scanner;
 import com.hcl.appscan.cli.scanners.ValidationUtil;
 import com.hcl.appscan.sdk.CoreConstants;
 import com.hcl.appscan.sdk.logging.IProgress;
-import com.hcl.appscan.sdk.logging.Message;
 import com.hcl.appscan.sdk.presence.CloudPresenceProvider;
 import com.hcl.appscan.sdk.results.CloudResultsProvider;
 import com.hcl.appscan.sdk.results.IResultsProvider;
@@ -103,6 +102,22 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Option(names = {"--loginPassword"}, description = "[Optional] If your app requires login, enter valid user credentials so that Application Security on Cloud can log in to the site.", required = false , order = 17)
     private String loginPassword;
     private File loginSequenceFile;
+
+    @Option(names = {"--serviceUrl"}, description = "[Required] AppScan Service URL", required = false , order = 19)
+    private String serviceUrl;
+
+    private Boolean allowUntrusted;
+
+    @Option(names = {"--allowUntrusted"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Set to true to enable untrusted connection to AppScan 360° service", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 20)
+    public void setAllowUntrusted(String value) {
+        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
+
+        if (invalid) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.allowUntrusted"), value));
+        }
+        allowUntrusted = Boolean.parseBoolean(value);
+    }
 
     @Option(names = {"--scanFile"},  description = "[Optional] The path to a scan template file (.scan or .scant).", required = false ,showDefaultValue = Visibility.ALWAYS , order = 14)
     public void setScanFile(String filepath) {
@@ -281,6 +296,12 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private  Optional<ScanResults> runScanAndGetResults() throws Exception {
 
         CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
+        if(null!=serviceUrl){
+            authHandler = new CloudAuthenticationHandler(serviceUrl , allowUntrusted);
+        }else{
+            authHandler = new CloudAuthenticationHandler();
+        }
+
         try {
             boolean isAuthenticated = authHandler.updateCredentials(key, secret);
 
@@ -467,8 +488,14 @@ public class InvokeDynamicScan implements Callable<Integer> {
         try{
             IScanServiceProvider scanServiceProvider = scan.getServiceProvider();
             while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)) && requestCounter < 10) {
-                String asocServerUrl = authHandler.getServer();
-                boolean isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl);
+                String asocServerUrl;
+                if(serviceUrl !=null){
+                    asocServerUrl = serviceUrl;
+                }else{
+                    asocServerUrl = authHandler.getServer();
+                }
+
+                boolean isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl,allowUntrusted);
                 if(!isASoCServerReachable){
                     m_scanStatus = CoreConstants.UNKNOWN;
                 }else{
