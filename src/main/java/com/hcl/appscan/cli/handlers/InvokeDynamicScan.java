@@ -106,17 +106,23 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Option(names = {"--serviceUrl"}, description = "[Required] AppScan Service URL", required = false , order = 19)
     private String serviceUrl;
 
-    private Boolean allowUntrusted;
+    private Boolean acceptssl;
 
-    @Option(names = {"--allowUntrusted"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Set to true to enable untrusted connection to AppScan 360° service", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 20)
-    public void setAllowUntrusted(String value) {
+    @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 20)
+    public void setAcceptssl(String value) {
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
         if (invalid) {
             throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.invalid.allowUntrusted"), value));
+                    String.format(messageBundle.getString("error.invalid.acceptssl"), value));
+        }else if ("true".equalsIgnoreCase(value) && serviceUrl==null){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.acceptssl.without.serviceurl")));
+        }else if ("true".equalsIgnoreCase(value) && !key.startsWith("local_")){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.acceptssl.without.a360")));
         }
-        allowUntrusted = Boolean.parseBoolean(value);
+        acceptssl = Boolean.parseBoolean(value);
     }
 
     @Option(names = {"--scanFile"},  description = "[Optional] The path to a scan template file (.scan or .scant).", required = false ,showDefaultValue = Visibility.ALWAYS , order = 14)
@@ -297,7 +303,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
         CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
         if(null!=serviceUrl){
-            authHandler = new CloudAuthenticationHandler(serviceUrl , allowUntrusted);
+            authHandler = new CloudAuthenticationHandler(serviceUrl , acceptssl);
         }else{
             authHandler = new CloudAuthenticationHandler();
         }
@@ -495,7 +501,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     asocServerUrl = authHandler.getServer();
                 }
 
-                boolean isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl,allowUntrusted);
+                boolean isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl,acceptssl);
                 if(!isASoCServerReachable){
                     m_scanStatus = CoreConstants.UNKNOWN;
                 }else{
