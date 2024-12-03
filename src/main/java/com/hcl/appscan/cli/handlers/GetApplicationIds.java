@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.*;
 
 @Command(name = "getapplications" , sortOptions = false, mixinStandardHelpOptions = true , subcommands = {HelpCommand.class} ,
-        description ="Get list of application id's from AppScan on Cloud"
+        description ="Get list of application id's from AppScan on Cloud or AppScan 360"
 )
 public class GetApplicationIds implements Callable<Integer> {
 
@@ -40,9 +40,9 @@ public class GetApplicationIds implements Callable<Integer> {
     Model.CommandSpec spec;
 
     ResourceBundle messageBundle = ResourceBundle.getBundle("messages");
-    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud API Key", required = true , order = 2)
+    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud or AppScan 360 API Key", required = true , order = 2)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud API Secret", required = true , order = 3)
+    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud or AppScan 360 API Secret", required = true , order = 3)
     private String secret;
 
     @Option(names = {"--serviceUrl"}, description = "[Required] AppScan Service URL", required = false , order = 1)
@@ -89,7 +89,8 @@ public class GetApplicationIds implements Callable<Integer> {
         try {
             authHandler.updateCredentials( key, secret );
         } catch (Exception e) {
-            logger.error("Error in authenticating the request. Please check the credentials!");
+            //logger.error("Error in authenticating the request. Please check the credentials!");
+            logger.error(e.getMessage());
             throw e;
         }
         try {

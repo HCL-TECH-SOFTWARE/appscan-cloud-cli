@@ -61,7 +61,7 @@ enum Optimization { Fast, Faster, Fastest, NoOptimization }
 enum ReportFormat { html, pdf, csv, xml }
 enum LoginType { None , Automatic , Manual }
 @Command(name = "invokedynamicscan", sortOptions = false, mixinStandardHelpOptions = true, version = "1.0",
-        description = "This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner." ,
+        description = "This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud or AppScan 360. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner." ,
         optionListHeading = "%n@|bold,underline Options|@:%n" , descriptionHeading = "%n@|bold,underline Description|@:%n%n",
         subcommands = {HelpCommand.class})
 public class InvokeDynamicScan implements Callable<Integer> {
@@ -71,11 +71,11 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Spec
     Model.CommandSpec spec;
 
-    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud API Key", required = true , order = 1)
+    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud or AppScan 360 API Key", required = true , order = 1)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud API Secret", required = true , order = 2)
+    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud or AppScan 360 API Secret", required = true , order = 2)
     private String secret;
-    @Option(names = {"--appId"}, description = "[Required] The HCL AppScan on Cloud application that this scan will be associated with", required = true , order = 3)
+    @Option(names = {"--appId"}, description = "[Required] The HCL AppScan on Cloud or AppScan 360 application that this scan will be associated with", required = true , order = 3)
     private String appId;
     @Option(names = {"--scanName"}, description = "[Required] Specify a name to use for the scan. This value is used to distinguish this scan and its results from others.", required = true , order = 4)
     private String scanName;
@@ -89,7 +89,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Option(names = {"--reportFormat"},defaultValue = "html",  description = "[Optional] Specify the format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false , showDefaultValue = Visibility.ALWAYS , order = 9)
     private ReportFormat reportFormat;
     private Boolean allowIntervention;
-    @Option(names = {"--presenceId"}, description = "[Optional] For sites not available on the internet, provide the ID of the AppScan Presence that can be used for the scan.", required = false ,order = 11)
     private String presenceId;
     private Boolean waitForResults;
     private Boolean failBuildNonCompliance;
@@ -123,6 +122,14 @@ public class InvokeDynamicScan implements Callable<Integer> {
                     String.format(messageBundle.getString("error.acceptssl.without.a360")));
         }
         acceptssl = Boolean.parseBoolean(value);
+    }
+    @Option(names = {"--presenceId"}, description = "[Optional] For sites not available on the internet, provide the ID of the AppScan Presence that can be used for the scan. This option is applicable for AppScan on CLoud only.", required = false ,order = 11)
+    public void setPresenceId(String value) {
+        if(key.startsWith("local_")){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.presenceId.withlocalkey"), value));
+        }
+        presenceId = value;
     }
 
     @Option(names = {"--scanFile"},  description = "[Optional] The path to a scan template file (.scan or .scant).", required = false ,showDefaultValue = Visibility.ALWAYS , order = 14)
@@ -183,13 +190,17 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         waitForResults = Boolean.parseBoolean(value);
     }
-    @Option(names = {"--allowIntervention"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
+    @Option(names = {"--allowIntervention"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result. This option is valid only for AppScan on CLoud scans.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
     public void setAllowIntervention(String value) {
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
         if (invalid) {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.allowIntervention"), value));
+        }
+        if(key.startsWith("local_")){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.allowIntervention.withlocalkey")));
         }
         allowIntervention = Boolean.parseBoolean(value);
     }

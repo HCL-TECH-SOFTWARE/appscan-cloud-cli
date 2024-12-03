@@ -47,24 +47,6 @@ public class GetPresenceIds implements Callable<Integer> {
     @Option(names = {"--serviceUrl"}, description = "[Required] AppScan Service URL", required = false , order = 3)
     private String serviceUrl;
 
-    private Boolean acceptssl;
-
-    @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 4)
-    public void setAcceptssl(String value) {
-        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
-
-        if (invalid) {
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.invalid.acceptssl"), value));
-        }else if ("true".equalsIgnoreCase(value) && serviceUrl==null){
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.acceptssl.without.serviceurl")));
-        }else if ("true".equalsIgnoreCase(value) && !key.startsWith("local_")){
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.acceptssl.without.a360")));
-        }
-        acceptssl = Boolean.parseBoolean(value);
-    }
     @Override
     public Integer call() {
         try{
@@ -76,9 +58,13 @@ public class GetPresenceIds implements Callable<Integer> {
     }
 
     private void printPresenceIdList() throws Exception {
-        CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
+        if(key.startsWith("local_")){
+            logger.error("This command is not applicable for AppScan 360 service.");
+            throw new IllegalArgumentException("This command is not applicable for AppScan 360 service.");
+        }
+        CloudAuthenticationHandler authHandler;
         if(null!=serviceUrl){
-            authHandler = new CloudAuthenticationHandler(serviceUrl , acceptssl);
+            authHandler = new CloudAuthenticationHandler(serviceUrl, false);
         }else{
             authHandler = new CloudAuthenticationHandler();
         }
