@@ -109,19 +109,21 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 20)
     public void setAcceptssl(String value) {
-        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
-
-        if (invalid) {
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.invalid.acceptssl"), value));
-        }else if ("true".equalsIgnoreCase(value) && serviceUrl==null){
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.acceptssl.without.serviceurl")));
-        }else if ("true".equalsIgnoreCase(value) && !key.startsWith("local_")){
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.acceptssl.without.a360")));
+        if(null!=key && !key.startsWith("local_") && (!value.isBlank()&&!"false".equalsIgnoreCase(value))){
+            logger.warn(messageBundle.getString("error.acceptssl.without.a360"));
         }
-        acceptssl = Boolean.parseBoolean(value);
+        if(null!=key && key.startsWith("local_")){
+            boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
+
+            if (invalid) {
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.acceptssl"), value));
+            }else if ("true".equalsIgnoreCase(value) && serviceUrl==null){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.acceptssl.without.serviceurl")));
+            }
+            acceptssl = Boolean.parseBoolean(value);
+        }
     }
     @Option(names = {"--presenceId"}, description = "[Optional] For sites not available on the internet, provide the ID of the AppScan Presence that can be used for the scan. This option is applicable for AppScan on CLoud only.", required = false ,order = 11)
     public void setPresenceId(String value) {
@@ -192,16 +194,18 @@ public class InvokeDynamicScan implements Callable<Integer> {
     }
     @Option(names = {"--allowIntervention"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result. This option is valid only for AppScan on CLoud scans.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
     public void setAllowIntervention(String value) {
+        if(null!=key && key.startsWith("local_") && (!value.isBlank()&&!"false".equalsIgnoreCase(value))){
+            throw new ParameterException(spec.commandLine(),
+                    String.format(messageBundle.getString("error.invalid.allowIntervention.withlocalkey")));
+        }
+
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
         if (invalid) {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.allowIntervention"), value));
         }
-        if(key.startsWith("local_")){
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.invalid.allowIntervention.withlocalkey")));
-        }
+
         allowIntervention = Boolean.parseBoolean(value);
     }
     @Option(names = {"--emailNotification"}, defaultValue = "false", paramLabel = "BOOLEAN" , description = "[Optional] Send the user an email when analysis is complete. Valid values : true , false", required = false , showDefaultValue = Visibility.ALWAYS , order = 8)
@@ -313,7 +317,10 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private  Optional<ScanResults> runScanAndGetResults() throws Exception {
 
         CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
-        if(null!=serviceUrl){
+        if(null!=serviceUrl && key.startsWith("local_")){
+            if(serviceUrl.endsWith("/")){
+                serviceUrl = serviceUrl.substring(0, serviceUrl.length()-1);
+            }
             authHandler = new CloudAuthenticationHandler(serviceUrl , acceptssl);
         }else{
             authHandler = new CloudAuthenticationHandler();
@@ -506,13 +513,17 @@ public class InvokeDynamicScan implements Callable<Integer> {
             IScanServiceProvider scanServiceProvider = scan.getServiceProvider();
             while (m_scanStatus != null && (m_scanStatus.equalsIgnoreCase(CoreConstants.INQUEUE) || m_scanStatus.equalsIgnoreCase(CoreConstants.RUNNING) || m_scanStatus.equalsIgnoreCase(CoreConstants.UNKNOWN) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSING) || m_scanStatus.equalsIgnoreCase(CoreConstants.PAUSED)) && requestCounter < 10) {
                 String asocServerUrl;
-                if(serviceUrl !=null){
+                boolean isASoCServerReachable;
+
+                if(serviceUrl !=null && key.startsWith("local_")){
                     asocServerUrl = serviceUrl;
+                    isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl,acceptssl);
                 }else{
                     asocServerUrl = authHandler.getServer();
+                    isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl,false);
                 }
 
-                boolean isASoCServerReachable = ValidationUtil.checkASoCConnectivity(asocServerUrl,acceptssl);
+
                 if(!isASoCServerReachable){
                     m_scanStatus = CoreConstants.UNKNOWN;
                 }else{
@@ -567,8 +578,11 @@ public class InvokeDynamicScan implements Callable<Integer> {
         } else {
 
             logger.info(messageBundle.getString("info.scan.completed"), m_scanStatus);
-
-            String asocAppUrl = authHandler.getServer() + "main/myapps/" + appId + "/scans/" + scan.getScanId();
+            String scanUrlPrefix = "";
+            if(!authHandler.getServer().endsWith("/")){
+                scanUrlPrefix= authHandler.getServer()+"/";
+            }
+            String asocAppUrl = scanUrlPrefix + "main/myapps/" + appId + "/scans/" + scan.getScanId();
             ScanResults scanresults = new ScanResults(provider, scan.getName(), provider.getStatus(), provider.getFindingsCount(), provider.getCriticalCount(), provider.getHighCount(), provider.getMediumCount(), provider.getLowCount(), provider.getInfoCount(), asocAppUrl);
             results = Optional.of(scanresults);
 

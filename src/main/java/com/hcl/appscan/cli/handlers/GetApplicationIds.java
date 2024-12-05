@@ -52,19 +52,24 @@ public class GetApplicationIds implements Callable<Integer> {
 
     @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 4)
     public void setAcceptssl(String value) {
-        boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
-        if (invalid) {
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.invalid.acceptssl"), value));
-        }else if ("true".equalsIgnoreCase(value) && serviceUrl==null){
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.acceptssl.without.serviceurl")));
-        }else if ("true".equalsIgnoreCase(value) && !key.startsWith("local_")){
-            throw new ParameterException(spec.commandLine(),
-                    String.format(messageBundle.getString("error.acceptssl.without.a360")));
+        if(null!=key && !key.startsWith("local_") && (!value.isBlank()&&!"false".equalsIgnoreCase(value))){
+            logger.warn(messageBundle.getString("error.acceptssl.without.a360"));
         }
-        acceptssl = Boolean.parseBoolean(value);
+
+        if(null!=key && key.startsWith("local_")){
+            boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
+
+            if (invalid) {
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.acceptssl"), value));
+            }else if ("true".equalsIgnoreCase(value) && serviceUrl==null){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.acceptssl.without.serviceurl")));
+            }
+            acceptssl = Boolean.parseBoolean(value);
+        }
+
     }
 
     @Override
@@ -79,7 +84,10 @@ public class GetApplicationIds implements Callable<Integer> {
 
     private void printApplicationsList() throws Exception {
         CloudAuthenticationHandler authHandler;
-        if(null!=serviceUrl){
+        if(null!=serviceUrl && key.startsWith("local_")){
+            if(serviceUrl.endsWith("/")){
+                serviceUrl = serviceUrl.substring(0, serviceUrl.length()-1);
+            }
              authHandler = new CloudAuthenticationHandler(serviceUrl , acceptssl);
         }else{
              authHandler = new CloudAuthenticationHandler();
