@@ -19,6 +19,7 @@
 package com.hcl.appscan.cli.handlers;
 
 import com.hcl.appscan.cli.auth.CloudAuthenticationHandler;
+import com.hcl.appscan.cli.scanners.ValidationUtil;
 import com.hcl.appscan.sdk.app.CloudApplicationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +88,11 @@ public class GetApplicationIds implements Callable<Integer> {
         if(null!=serviceUrl && key.startsWith("local_")){
             if(serviceUrl.endsWith("/")){
                 serviceUrl = serviceUrl.substring(0, serviceUrl.length()-1);
+            }
+            boolean isValidURL = ValidationUtil.checkASoCConnectivity(serviceUrl,acceptssl);
+            if(!isValidURL){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.unreachable.serviceurl")));
             }
              authHandler = new CloudAuthenticationHandler(serviceUrl , acceptssl);
         }else{

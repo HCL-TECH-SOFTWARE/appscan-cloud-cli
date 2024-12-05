@@ -321,6 +321,11 @@ public class InvokeDynamicScan implements Callable<Integer> {
             if(serviceUrl.endsWith("/")){
                 serviceUrl = serviceUrl.substring(0, serviceUrl.length()-1);
             }
+            boolean isValidURL = ValidationUtil.checkASoCConnectivity(serviceUrl,acceptssl);
+            if(!isValidURL){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.unreachable.serviceurl")));
+            }
             authHandler = new CloudAuthenticationHandler(serviceUrl , acceptssl);
         }else{
             authHandler = new CloudAuthenticationHandler();
