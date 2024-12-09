@@ -102,7 +102,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private String loginPassword;
     private File loginSequenceFile;
 
-    @Option(names = {"--serviceUrl"}, description = "[Required] AppScan Service URL", required = false , order = 19)
+    @Option(names = {"--serviceUrl"}, description = "[Optional] AppScan Service URL", required = false , order = 19)
     private String serviceUrl;
 
     private Boolean acceptssl;

@@ -46,7 +46,7 @@ public class GetApplicationIds implements Callable<Integer> {
     @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud or AppScan 360 API Secret", required = true , order = 3)
     private String secret;
 
-    @Option(names = {"--serviceUrl"}, description = "[Required] AppScan Service URL", required = false , order = 1)
+    @Option(names = {"--serviceUrl"}, description = "[Optional] AppScan Service URL", required = false , order = 1)
     private String serviceUrl;
 
     private Boolean acceptssl;

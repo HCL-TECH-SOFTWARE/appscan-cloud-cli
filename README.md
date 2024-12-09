@@ -1,10 +1,10 @@
 # HCL AppScan Cloud CLI 📝  
 
-  The HCL Appscan command-line utility (CLI) is designed to streamline Security Testing with AppScan on Cloud. This tool can be seamlessly integrated into any CICD platform or used independently.  
+  The HCL Appscan command-line utility (CLI) is designed to streamline Security Testing with AppScan on Cloud or AppScan 360. This tool can be seamlessly integrated into any CICD platform or used independently.  
   
 ## Get Started 🚀  
 
-- You need an account at the HCL AppScan on Cloud service and an API Key and Secret for AppScan on Cloud Authentication. To generate an API key and secret credentials, refer to Generating API Keys (hcltechsw.com).
+- You need an account at the HCL AppScan on Cloud service and an API Key and Secret for AppScan on Cloud or AppScan 360 Authentication. To generate an API key and secret credentials, refer to Generating API Keys (hcltechsw.com).
 - Create an application on the service to associate with your scans.
 - A Target website URL to perform a dynamic scan on.
 - Access to the AppScan CLI Tool Binary hosted on Maven Central.
@@ -23,8 +23,11 @@ Usage:  getapplications [-hV] --key=<key> --secret=<secret> [COMMAND]
 
   -h, --help              Show this help message and exit.
   -V, --version           Print version information and exit.
-      --key=<key>         [Required] Appscan on Cloud API Key
-      --secret=<secret>   [Required] Appscan on Cloud API Secret
+      --key=<key>         [Required] Appscan on Cloud or AppScan 360 API Key
+      --secret=<secret>   [Required] Appscan on Cloud or AppScan 360 API Secret
+      --serviceUrl=<serviceUrl> [Optional] AppScan Service URL
+      --acceptssl=BOOLEAN   [Optional] Ignore untrusted certificates when connecting to AppScan 360. Only intended for testing purposes. Not applicable to AppScan on Cloud.
+                              Default: false
 Commands:
   help : Display help information about the specified command
 
@@ -35,7 +38,7 @@ java -jar appscan-cloud-cli-1.1.0.jar getapplications --key=your_api_key --secre
 
 ### invokedynamicscan
 
-This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner. Once the scan is completed , both scan report and scan log zip file would be downloaded in AppscanReports folder.  
+This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud or AppScan 360. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner. Once the scan is completed , both scan report and scan log zip file would be downloaded in AppscanReports folder.  
 
 ~~~bash  
 Usage:  invokedynamicscan [-hV] [--allowIntervention]
@@ -50,6 +53,8 @@ Usage:  invokedynamicscan [-hV] [--allowIntervention]
                                  [--reportFormat=<reportFormat>]
                                  [--scanFile=<scanFile>] --scanName=<scanName>
                                  [--scanType=<scanType>] --secret=<secret>
+                                 [--serviceUrl=<serviceUrl>]
+                                 [--acceptssl=BOOLEAN]
                                  --target=<target>
                                  [--trafficFile / --loginSequenceFile=<loginSequenceFile>] [COMMAND]
 
@@ -85,7 +90,9 @@ Options:
       --allowIntervention   [Optional] When set to true, our scan enablement
                               team will step in if the scan fails, or if no
                               issues are found, and try to fix the
-                              configuration. This may delay the scan result.
+                              configuration. This may delay the scan result. 
+                              This option is valid only for AppScan on CLoud
+                              scans.
                               Default: false
       --presenceId=<presenceId>
                             [Optional] For sites not available on the internet,
@@ -122,6 +129,13 @@ Options:
                               file data. Supported file type: CONFIG: AppScan
                               Activity Recorder file.
                               Default: null
+      --serviceUrl=<serviceUrl>
+                            [Optional] AppScan Service URL
+      --acceptssl=BOOLEAN   [Optional] Ignore untrusted certificates when
+                              connecting to AppScan 360. Only intended for
+                              testing purposes. Not applicable to AppScan on
+                              Cloud.
+                              Default: false
 Example:
 java -jar appscan-cloud-cli-1.1.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
 --appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net
