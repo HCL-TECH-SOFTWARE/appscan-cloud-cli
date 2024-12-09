@@ -5,7 +5,7 @@
   
 ## Prerequisites 🚀  
 
-- HCL AppScan on Cloud or HCL AppScan 360°° [account](https://help.hcl-software.com/appscan/ASoC/HCL_ID_Signup.html).
+- HCL AppScan on Cloud or HCL AppScan 360° [account](https://help.hcl-software.com/appscan/ASoC/HCL_ID_Signup.html).
 - API Key and secret for AppScan on Cloud authentication. To generate an API key and secret, see to [Generating API Keys](https://help.hcl-software.com/appscan/ASoC/appseccloud_generate_api_key_cm.html?hl=secret).
 - An AppScan on Cloud [application](https://help.hcl-software.com/appscan/ASoC/ent_create_app_inventory_cm.html).
 - A target URL for dynamic scanning.

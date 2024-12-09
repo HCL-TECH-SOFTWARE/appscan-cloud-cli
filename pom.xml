@@ -7,7 +7,7 @@
   <packaging>jar</packaging>
 
   <name>HCL AppScan Cloud CLI</name>
-  <description>Command line interface tool for interacting with HCL AppScan on Cloud</description>
+  <description>Command line interface tool for interacting with HCL AppScan on Cloud or HCL AppScan 360°</description>
   <url>https://cloud.appscan.com</url>
 
   <licenses>
