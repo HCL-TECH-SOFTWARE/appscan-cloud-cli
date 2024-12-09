@@ -59,8 +59,8 @@ public class GetPresenceIds implements Callable<Integer> {
 
     private void printPresenceIdList() throws Exception {
         if(key.startsWith("local_")){
-            logger.error("This command is not applicable for AppScan 360 service.");
-            throw new IllegalArgumentException("This command is not applicable for AppScan 360 service.");
+            logger.error("This command is not applicable for AppScan 360° service.");
+            throw new IllegalArgumentException("This command is not applicable for AppScan 360° service.");
         }
         CloudAuthenticationHandler authHandler;
         if(null!=serviceUrl){

@@ -31,7 +31,7 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.*;
 
 @Command(name = "getapplications" , sortOptions = false, mixinStandardHelpOptions = true , subcommands = {HelpCommand.class} ,
-        description ="Get list of application id's from AppScan on Cloud or AppScan 360"
+        description ="Get list of application id's from AppScan on Cloud or AppScan 360°"
 )
 public class GetApplicationIds implements Callable<Integer> {
 
@@ -41,9 +41,9 @@ public class GetApplicationIds implements Callable<Integer> {
     Model.CommandSpec spec;
 
     ResourceBundle messageBundle = ResourceBundle.getBundle("messages");
-    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud or AppScan 360 API Key", required = true , order = 2)
+    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud or AppScan 360° API Key", required = true , order = 2)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud or AppScan 360 API Secret", required = true , order = 3)
+    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud or AppScan 360° API Secret", required = true , order = 3)
     private String secret;
 
     @Option(names = {"--serviceUrl"}, description = "[Optional] AppScan Service URL", required = false , order = 1)
@@ -51,7 +51,7 @@ public class GetApplicationIds implements Callable<Integer> {
 
     private Boolean acceptssl;
 
-    @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 4)
+    @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360°. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 4)
     public void setAcceptssl(String value) {
 
         if(null!=key && !key.startsWith("local_") && (!value.isBlank()&&!"false".equalsIgnoreCase(value))){

@@ -61,7 +61,7 @@ enum Optimization { Fast, Faster, Fastest, NoOptimization }
 enum ReportFormat { html, pdf, csv, xml }
 enum LoginType { None , Automatic , Manual }
 @Command(name = "invokedynamicscan", sortOptions = false, mixinStandardHelpOptions = true, version = "1.0",
-        description = "This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud or AppScan 360. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner." ,
+        description = "This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud or AppScan 360°. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner." ,
         optionListHeading = "%n@|bold,underline Options|@:%n" , descriptionHeading = "%n@|bold,underline Description|@:%n%n",
         subcommands = {HelpCommand.class})
 public class InvokeDynamicScan implements Callable<Integer> {
@@ -71,11 +71,11 @@ public class InvokeDynamicScan implements Callable<Integer> {
     @Spec
     Model.CommandSpec spec;
 
-    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud or AppScan 360 API Key", required = true , order = 1)
+    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud or AppScan 360° API Key", required = true , order = 1)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud or AppScan 360 API Secret", required = true , order = 2)
+    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud or AppScan 360° API Secret", required = true , order = 2)
     private String secret;
-    @Option(names = {"--appId"}, description = "[Required] The HCL AppScan on Cloud or AppScan 360 application that this scan will be associated with", required = true , order = 3)
+    @Option(names = {"--appId"}, description = "[Required] The HCL AppScan on Cloud or AppScan 360° application that this scan will be associated with", required = true , order = 3)
     private String appId;
     @Option(names = {"--scanName"}, description = "[Required] Specify a name to use for the scan. This value is used to distinguish this scan and its results from others.", required = true , order = 4)
     private String scanName;
@@ -107,7 +107,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     private Boolean acceptssl;
 
-    @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 20)
+    @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360°. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 20)
     public void setAcceptssl(String value) {
         if(null!=key && !key.startsWith("local_") && (!value.isBlank()&&!"false".equalsIgnoreCase(value))){
             logger.warn(messageBundle.getString("error.acceptssl.without.a360"));
