@@ -192,7 +192,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         }
         waitForResults = Boolean.parseBoolean(value);
     }
-    @Option(names = {"--allowIntervention"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result. This option is valid only for AppScan on CLoud scans.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
+    @Option(names = {"--allowIntervention"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] When set to true, our scan enablement team will step in if the scan fails, or if no issues are found, and try to fix the configuration. This may delay the scan result. This option is valid only for AppScan on Cloud scans.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 10)
     public void setAllowIntervention(String value) {
         if(null!=key && key.startsWith("local_") && (!value.isBlank()&&!"false".equalsIgnoreCase(value))){
             throw new ParameterException(spec.commandLine(),

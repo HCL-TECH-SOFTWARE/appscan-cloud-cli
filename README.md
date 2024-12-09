@@ -93,7 +93,7 @@ Options:
                               team will step in if the scan fails, or if no
                               issues are found, and try to fix the
                               configuration. This may delay the scan result. 
-                              This option is valid only for AppScan on CLoud
+                              This option is valid only for AppScan on Cloud
                               scans.
                               Default: false
       --presenceId=<presenceId>
