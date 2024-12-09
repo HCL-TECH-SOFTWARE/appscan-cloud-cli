@@ -33,15 +33,18 @@ import java.util.concurrent.locks.ReentrantLock;
 public class CloudAuthenticationHandler implements IAuthenticationProvider, Serializable {
 	private static final Lock lock = new ReentrantLock();
 	private final CloudCredentials cloudCredentials;
-
+	
 	public CloudCredentials getCloudCredentials() {
 		return cloudCredentials;
 	}
 
 	public CloudAuthenticationHandler() {
-		this.cloudCredentials = new CloudCredentials();
+		this.cloudCredentials = new CloudCredentials(false);
 	}
+	public CloudAuthenticationHandler(String serviceUrl , boolean acceptInvalidCerts) {
+		this.cloudCredentials = new CloudCredentials(serviceUrl,acceptInvalidCerts);
 
+	}
 	@Override
 	public boolean isTokenExpired() {
 
@@ -97,7 +100,7 @@ public class CloudAuthenticationHandler implements IAuthenticationProvider, Seri
 
 	@Override
 	public boolean getacceptInvalidCerts() {
-		return false;
+		return cloudCredentials.getacceptInvalidCerts();
 	}
 
 	public boolean updateCredentials(String key, String secret) throws Exception {
@@ -108,7 +111,7 @@ public class CloudAuthenticationHandler implements IAuthenticationProvider, Seri
 		boolean b;
 		try {
 			this.cloudCredentials.updateCredentials(key, secret);
-			b = handler.login(credentials.getKey(),credentials.getSecret(), true, LoginType.ASoC_Federated, cloudCredentials.getClientType());
+			b = handler.login(credentials.getKey(),credentials.getSecret(), true, LoginType.ASoC_Federated, cloudCredentials.getClientType() );
 
 		} catch (Exception e) {
 			throw e;

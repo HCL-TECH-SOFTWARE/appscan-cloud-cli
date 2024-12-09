@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.*;
@@ -34,12 +35,17 @@ import static picocli.CommandLine.*;
 public class GetPresenceIds implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(GetPresenceIds.class);
+    @Spec
+    Model.CommandSpec spec;
 
+    ResourceBundle messageBundle = ResourceBundle.getBundle("messages");
     @Option(names = {"--key"}, description = "[Required] AppScan on Cloud API Key", required = true , order = 1)
     private String key;
     @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud API Secret", required = true , order = 2)
     private String secret;
 
+    @Option(names = {"--serviceUrl"}, description = "[Required] AppScan Service URL", required = false , order = 3)
+    private String serviceUrl;
 
     @Override
     public Integer call() {
@@ -52,7 +58,16 @@ public class GetPresenceIds implements Callable<Integer> {
     }
 
     private void printPresenceIdList() throws Exception {
-        CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
+        if(key.startsWith("local_")){
+            logger.error("This command is not applicable for AppScan 360° service.");
+            throw new IllegalArgumentException("This command is not applicable for AppScan 360° service.");
+        }
+        CloudAuthenticationHandler authHandler;
+        if(null!=serviceUrl){
+            authHandler = new CloudAuthenticationHandler(serviceUrl, false);
+        }else{
+            authHandler = new CloudAuthenticationHandler();
+        }
         try {
             authHandler.updateCredentials(key, secret);
         } catch (Exception e) {

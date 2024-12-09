@@ -3,11 +3,11 @@
 
   <groupId>com.hcl</groupId>
   <artifactId>appscan-cloud-cli</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>HCL AppScan Cloud CLI</name>
-  <description>Command line interface tool for interacting with HCL AppScan on Cloud</description>
+  <description>Command line interface tool for interacting with HCL AppScan on Cloud or HCL AppScan 360°</description>
   <url>https://cloud.appscan.com</url>
 
   <licenses>
@@ -32,7 +32,7 @@
     <asciidoctorj.pdf.version>2.3.9</asciidoctorj.pdf.version>
     <asciidoctorj.version>2.5.10</asciidoctorj.version>
     <picoli.version>4.7.5</picoli.version>
-    <appscan.sdk.version>1.1.0</appscan.sdk.version>
+    <appscan.sdk.version>1.1.5</appscan.sdk.version>
     <logback.classic.version>1.4.14</logback.classic.version>
     <jansi.version>2.4.0</jansi.version>
     <picoli.codegen.version>4.7.5</picoli.codegen.version>

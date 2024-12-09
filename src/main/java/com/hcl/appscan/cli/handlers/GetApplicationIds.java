@@ -19,27 +19,59 @@
 package com.hcl.appscan.cli.handlers;
 
 import com.hcl.appscan.cli.auth.CloudAuthenticationHandler;
+import com.hcl.appscan.cli.scanners.ValidationUtil;
 import com.hcl.appscan.sdk.app.CloudApplicationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.*;
 
 @Command(name = "getapplications" , sortOptions = false, mixinStandardHelpOptions = true , subcommands = {HelpCommand.class} ,
-        description ="Get list of application id's from AppScan on Cloud"
+        description ="Get list of application id's from AppScan on Cloud or AppScan 360°"
 )
 public class GetApplicationIds implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(GetApplicationIds.class);
 
-    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud API Key", required = true , order = 1)
+    @Spec
+    Model.CommandSpec spec;
+
+    ResourceBundle messageBundle = ResourceBundle.getBundle("messages");
+    @Option(names = {"--key"}, description = "[Required] AppScan on Cloud or AppScan 360° API Key", required = true , order = 2)
     private String key;
-    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud API Secret", required = true , order = 2)
+    @Option(names = {"--secret"}, description = "[Required] AppScan on Cloud or AppScan 360° API Secret", required = true , order = 3)
     private String secret;
 
+    @Option(names = {"--serviceUrl"}, description = "[Optional] AppScan Service URL", required = false , order = 1)
+    private String serviceUrl;
+
+    private Boolean acceptssl;
+
+    @Option(names = {"--acceptssl"},defaultValue = "false",  paramLabel = "BOOLEAN" , description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360°. Only intended for testing purposes. Not applicable to AppScan on Cloud.", required = false ,showDefaultValue = Help.Visibility.ALWAYS , order = 4)
+    public void setAcceptssl(String value) {
+
+        if(null!=key && !key.startsWith("local_") && (!value.isBlank()&&!"false".equalsIgnoreCase(value))){
+            logger.warn(messageBundle.getString("error.acceptssl.without.a360"));
+        }
+
+        if(null!=key && key.startsWith("local_")){
+            boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
+
+            if (invalid) {
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.invalid.acceptssl"), value));
+            }else if ("true".equalsIgnoreCase(value) && serviceUrl==null){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.acceptssl.without.serviceurl")));
+            }
+            acceptssl = Boolean.parseBoolean(value);
+        }
+
+    }
 
     @Override
     public Integer call() {
@@ -52,11 +84,27 @@ public class GetApplicationIds implements Callable<Integer> {
     }
 
     private void printApplicationsList() throws Exception {
-        CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
+        CloudAuthenticationHandler authHandler;
+        if(null!=serviceUrl && key.startsWith("local_")){
+            if(serviceUrl.endsWith("/")){
+                serviceUrl = serviceUrl.substring(0, serviceUrl.length()-1);
+            }
+            boolean isValidURL = ValidationUtil.checkASoCConnectivity(serviceUrl,acceptssl);
+            if(!isValidURL){
+                throw new ParameterException(spec.commandLine(),
+                        String.format(messageBundle.getString("error.unreachable.serviceurl")));
+            }
+             authHandler = new CloudAuthenticationHandler(serviceUrl , acceptssl);
+        }else{
+             authHandler = new CloudAuthenticationHandler();
+        }
+
+
         try {
-            authHandler.updateCredentials(key, secret);
+            authHandler.updateCredentials( key, secret );
         } catch (Exception e) {
-            logger.error("Error in authenticating the request. Please check the credentials!");
+            //logger.error("Error in authenticating the request. Please check the credentials!");
+            logger.error(e.getMessage());
             throw e;
         }
         try {
