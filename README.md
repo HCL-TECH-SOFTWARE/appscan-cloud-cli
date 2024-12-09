@@ -6,8 +6,8 @@
 ## Prerequisites 🚀  
 
 - HCL AppScan on Cloud [account](https://help.hcl-software.com/appscan/ASoC/HCL_ID_Signup.html) or HCL AppScan 360° [account](https://help.hcl-software.com/appscan/360/1.4.0/home.html).
-- API Key and secret for AppScan on Cloud or AppScan 360° authentication. To generate an API key and secret for AppScan on Cloud, see to [Generating API Keys](https://help.hcl-software.com/appscan/ASoC/appseccloud_generate_api_key_cm.html?hl=secret). To generate an API key and secret for AppScan 360°, see to [Generating API Keys] (https://help.hcl-software.com/appscan/360/1.4.0/appseccloud_generate_api_key_cm.html)
-- An AppScan on Cloud [application](https://help.hcl-software.com/appscan/ASoC/ent_create_app_inventory_cm.html) or an AppScan 360° [application] (https://help.hcl-software.com/appscan/360/1.4.0/ent_create_application.html) .
+- API Key and secret for AppScan on Cloud or AppScan 360° authentication. To generate an API key and secret for AppScan on Cloud, see to [Generating API Keys](https://help.hcl-software.com/appscan/ASoC/appseccloud_generate_api_key_cm.html?hl=secret). To generate an API key and secret for AppScan 360°, see to [Generating API Keys](https://help.hcl-software.com/appscan/360/1.4.0/appseccloud_generate_api_key_cm.html)
+- An AppScan on Cloud [application](https://help.hcl-software.com/appscan/ASoC/ent_create_app_inventory_cm.html) or an AppScan 360° [application](https://help.hcl-software.com/appscan/360/1.4.0/ent_create_application.html).
 - A target URL for dynamic scanning.
 - Access to appscan-cloud-cli hosted on [Maven Central](https://central.sonatype.com/artifact/com.hcl/appscan-cloud-cli).
 - Java 11 or later.
