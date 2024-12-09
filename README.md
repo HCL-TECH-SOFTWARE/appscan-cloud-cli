@@ -1,22 +1,23 @@
 # HCL AppScan Cloud CLI 📝  
 
-  The HCL Appscan command-line utility (CLI) is designed to streamline Security Testing with AppScan on Cloud or AppScan 360. This tool can be seamlessly integrated into any CICD platform or used independently.  
+  The HCL AppScan command line utility (CLI) is designed to streamline security testing with AppScan on Cloud or AppScan 360. This tool can be integrated into any CI/CD platform or used independently.  
+
   
-## Get Started 🚀  
+## Prerequisites 🚀  
 
-- You need an account at the HCL AppScan on Cloud service and an API Key and Secret for AppScan on Cloud or AppScan 360 Authentication. To generate an API key and secret credentials, refer to Generating API Keys (hcltechsw.com).
-- Create an application on the service to associate with your scans.
-- A Target website URL to perform a dynamic scan on.
-- Access to the AppScan CLI Tool Binary hosted on Maven Central.
-- Java 11 or later should be installed.
+- HCL AppScan on Cloud or AppScan 360 [account](https://help.hcl-software.com/appscan/ASoC/HCL_ID_Signup.html).
+- API Key and secret for AppScan on Cloud authentication. To generate an API key and secret, see to [Generating API Keys](https://help.hcl-software.com/appscan/ASoC/appseccloud_generate_api_key_cm.html?hl=secret).
+- An AppScan on Cloud [application](https://help.hcl-software.com/appscan/ASoC/ent_create_app_inventory_cm.html).
+- A target URL for dynamic scanning.
+- Access to appscan-cloud-cli hosted on [Maven Central](https://central.sonatype.com/artifact/com.hcl/appscan-cloud-cli).
+- Java 11 or later.
 
-## CLI Tool Usage Manual  ✨
 
-## Commands
+## CLI Commands
 
 ### getapplications
 
-Gets list of application id's from Appscan on Cloud
+Returns a list of application IDs from AppScan on Cloud.
 
 ~~~bash  
 Usage:  getapplications [-hV] --key=<key> --secret=<secret> [COMMAND]
@@ -38,8 +39,9 @@ java -jar appscan-cloud-cli-1.1.0.jar getapplications --key=your_api_key --secre
 
 ### invokedynamicscan
 
-This command serves the purpose of configuring and triggering the initiation of a Dynamic Security Analysis Scan on AppScan on Cloud or AppScan 360. This operation is designed to seamlessly retrieve the outcomes of the scan once it has concluded. The yielded results encompass a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs for these reports. Moreover, the Command Line Interface (CLI) can be customized by employing specific command line options to establish criteria for failure instances. Consequently, this enables the CLI to transmit a signal indicating success or failure to the designated pipeline in a well-defined manner. Once the scan is completed , both scan report and scan log zip file would be downloaded in AppscanReports folder.  
-
+Configures and initiates a dynamic analysis (DAST) scan on AppScan on Cloud or AppScan 360, and returns scan results. The CLI lets you know if a scan succeeds or fails based on failure criteria as specified with command options.
+When the scan is complete, the scan report and scan log zip file are downloaded to the  AppScanReports folder. Scan results include a list of pinpointed vulnerabilities, comprehensive analytical documents, and associated URLs.
+ 
 ~~~bash  
 Usage:  invokedynamicscan [-hV] [--allowIntervention]
                                  [--emailNotification]
@@ -176,7 +178,7 @@ java -jar appscan-cloud-cli-1.1.0.jar invokedynamicscan --key=your_api_key --sec
 
 ### getpresenceids
 
-Gets list of presence id’s from Appscan on Cloud
+Returns a list of presence IDs from AppScan on Cloud.
 
 ~~~bash
 Usage:  getpresenceids [-hV] --key=<key> --secret=<secret> [COMMAND]
@@ -195,9 +197,8 @@ java -jar appscan-cloud-cli-1.1.0.jar getpresenceids --key=your_api_key --secret
 Display help information about the specified command.
 
 ### Note
-If a scanName contains special characters , it needs to be specified in double quotes. 
-For ex : --scanName="Test Rel" or --scanName="Test>Rel" etc
+If a scanName contains special characters, enclose scanName in double quotes. For exampl : --scanName="Test Rel" or --scanName="Test>Rel".
 
 ## License
 
-All files found in this project are licensed under the [Apache License 2.0](LICENSE).
+All files in this project are licensed under [Apache License 2.0](LICENSE).
