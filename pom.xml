@@ -3,7 +3,7 @@
 
   <groupId>com.hcl</groupId>
   <artifactId>appscan-cloud-cli</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>HCL AppScan Cloud CLI</name>
@@ -257,7 +257,7 @@
     <connection>scm:git:ssh://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli.git</developerConnection>
     <url>https://github.com/HCL-TECH-SOFTWARE/appscan-cloud-cli</url>
-    <tag>appscan-cloud-cli-1.2.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
 </project>
