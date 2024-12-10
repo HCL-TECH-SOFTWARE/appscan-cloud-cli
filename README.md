@@ -37,7 +37,7 @@ For AppScan on Cloud:
 java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=your_api_key --secret=your_api_secret
 
 For AppScan 360°:
-java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=your_api_key --secret=your_api_secret --serviceUrl=AppScan360°URL --acceptssl=false
+java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=your_api_key --secret=your_api_secret --serviceUrl=<AppScan 360° URL> --acceptssl=false
 
 ~~~
 
@@ -151,7 +151,7 @@ java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=your_api_key --sec
 For AppScan 360°:
 
 java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
---appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=AppScan360°URL --acceptssl=false
+--appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=<AppScan 360° URL> --acceptssl=false
 
 Commands:
   help         Display help information about the specified command.
@@ -191,7 +191,7 @@ java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=your_api_key --sec
 For AppScan 360°:
 
 java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
---appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=AppScan360°URL --acceptssl=false failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10  
+--appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=<AppScan 360° URL> --acceptssl=false failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10  
 ~~~
 
 ### getpresenceids
@@ -212,7 +212,7 @@ java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=your_api_key --secret
 
 For AppScan 360°:
 
-java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=your_api_key --secret=your_api_secret --serviceUrl=AppScan360°URL --acceptssl=false
+java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=your_api_key --secret=your_api_secret --serviceUrl=<AppScan 360° URL> --acceptssl=false
 ~~~
 
 ### help
