@@ -34,10 +34,10 @@ Commands:
 
 Examples:
 For AppScan on Cloud:
-java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=your_api_key --secret=your_api_secret
+java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=<your_api_key> --secret=<your_api_secret>
 
 For AppScan 360°:
-java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=your_api_key --secret=your_api_secret --serviceUrl=<AppScan 360° URL> --acceptssl=false
+java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=<your_api_key> --secret=<your_api_secret> --serviceUrl=<AppScan 360° URL> --acceptssl=false
 
 ~~~
 
@@ -145,13 +145,13 @@ Options:
 Examples:
 For AppScan on Cloud:
 
-java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
---appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net
+java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
+--appId=<your_asoc_app_id> --scanName=test_scan --target==https://demo.testfire.net
 
 For AppScan 360°:
 
-java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
---appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=<AppScan 360° URL> --acceptssl=false
+java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
+--appId=<your_appscan360_app_id> --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=<AppScan 360° URL> --acceptssl=false
 
 Commands:
   help         Display help information about the specified command.
@@ -185,13 +185,13 @@ Commands:
 Examples:
 For AppScan on Cloud:
 
-java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
---appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10        
+java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
+--appId=<your_asoc_app_id> --scanName=test_scan --target==https://demo.testfire.net failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10        
 
 For AppScan 360°:
 
-java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=your_api_key --secret=your_api_secret
---appId=your_asoc_app_id --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=<AppScan 360° URL> --acceptssl=false failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10  
+java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
+--appId=<your_appscan360_app_id> --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=<AppScan 360° URL> --acceptssl=false failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10  
 ~~~
 
 ### getpresenceids
@@ -206,13 +206,8 @@ Get list of presence id's from Appscan on Cloud
       --key=<key>         [Required] Appscan on Cloud API Key
       --secret=<secret>   [Required] Appscan on Cloud API Secret
 Examples:
-For AppScan on Cloud:
+java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=<your_api_key> --secret=<your_api_secret>
 
-java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=your_api_key --secret=your_api_secret
-
-For AppScan 360°:
-
-java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=your_api_key --secret=your_api_secret --serviceUrl=<AppScan 360° URL> --acceptssl=false
 ~~~
 
 ### help
