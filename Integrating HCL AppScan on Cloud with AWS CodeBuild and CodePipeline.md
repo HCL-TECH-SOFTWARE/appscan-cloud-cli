@@ -85,8 +85,8 @@ scan as part of the build process.
         phases:
           build:
             commands:
-               - wget https://repo1.maven.org/maven2/com/hcl/appscan-cloud-cli/1.0.0/appscan-cloud-cli-1.0.0.jar
-               - java -jar appscan-cloud-cli-1.0.0.jar invokedynamicscan --key=$STAGING_ASOC_KEY --secret=$STAGING_ASOC_KEY_SECRET --appId=<ASoC Application ID> --scanName=<Scan Name> --target=<Target URL>
+               - wget https://repo1.maven.org/maven2/com/hcl/appscan-cloud-cli/1.2.0/appscan-cloud-cli-1.2.0.jar
+               - java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=$STAGING_ASOC_KEY --secret=$STAGING_ASOC_KEY_SECRET --appId=<ASoC Application ID> --scanName=<Scan Name> --target=<Target URL>
         artifacts:
           files:
             - 'AppscanReports/*'
