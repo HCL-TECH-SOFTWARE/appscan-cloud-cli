@@ -85,7 +85,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
     private ScanType scanType;
     @Option(names = {"--optimization"}, defaultValue = "fast", description = "[Optional] You can reduce scan time by choosing a balance between speed and issue coverage. Valid values : ${COMPLETION-CANDIDATES}", required = false , showDefaultValue = Visibility.ALWAYS , order = 7)
     private Optimization optimization;
-    private Boolean emailNotification;
     @Option(names = {"--reportFormat"},defaultValue = "html",  description = "[Optional] Specify the format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false , showDefaultValue = Visibility.ALWAYS , order = 9)
     private ReportFormat reportFormat;
     private Boolean allowIntervention;
@@ -208,7 +207,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
         allowIntervention = Boolean.parseBoolean(value);
     }
-    @Option(names = {"--emailNotification"}, defaultValue = "false", paramLabel = "BOOLEAN" , description = "[Optional] Send the user an email when analysis is complete. Valid values : true , false", required = false , showDefaultValue = Visibility.ALWAYS , order = 8)
+    private boolean emailNotificationProvided;
+
+    @Option(names = {"--emailNotification"}, paramLabel = "BOOLEAN", hidden = true)
     public void setEmailNotification(String value) {
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
 
@@ -216,7 +217,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.emailNotification"), value));
         }
-        emailNotification = Boolean.parseBoolean(value);
+        emailNotificationProvided = true;
     }
 
     @Option(names = {"--loginSequenceFile","--trafficFile"},  description = "[Optional] Provide a path to the login sequence file data. Supported file type: CONFIG: AppScan Activity Recorder file. Deprecation Notice: Option --trafficFile is deprecated; please use Option --loginSequenceFile for future compatibility.", required = false ,showDefaultValue = Visibility.ALWAYS , order = 18)
@@ -315,6 +316,7 @@ public class InvokeDynamicScan implements Callable<Integer> {
         return 0;
     }
     private  Optional<ScanResults> runScanAndGetResults() throws Exception {
+        warnIfEmailNotificationProvided();
 
         CloudAuthenticationHandler authHandler = new CloudAuthenticationHandler();
         if(null!=serviceUrl && key.startsWith("local_")){
@@ -439,7 +441,6 @@ public class InvokeDynamicScan implements Callable<Integer> {
             scanName = scanName + "_" + SystemUtil.getTimeStamp();
         }
         properties.put(CoreConstants.SCAN_NAME, scanName);
-        properties.put(CoreConstants.EMAIL_NOTIFICATION, Boolean.toString(emailNotification));
         properties.put(FULLY_AUTOMATIC, Boolean.toString(!allowIntervention));
         properties.put(CoreConstants.SERVER_URL, authHandler.getServer());
         properties.put(CoreConstants.ACCEPT_INVALID_CERTS, Boolean.toString(authHandler.getacceptInvalidCerts()));
@@ -450,6 +451,47 @@ public class InvokeDynamicScan implements Callable<Integer> {
         properties.put(CLIENT_TYPE, LoginUtility.getClientType());
         return properties;
 
+    }
+
+    private void warnIfEmailNotificationProvided() {
+        if (emailNotificationProvided) {
+            String title = messageBundle.getString("warning.emailNotification.title");
+            String message = messageBundle.getString("warning.emailNotification.message");
+            String docLabel = messageBundle.getString("warning.emailNotification.docLabel");
+            String docUrl = messageBundle.getString("warning.emailNotification.docUrl");
+            String learnMoreLine;
+            if (supportsOsc8Hyperlinks()) {
+                learnMoreLine = String.format(messageBundle.getString("warning.emailNotification.learnMore"),
+                        createOsc8Hyperlink(docLabel, docUrl));
+            } else {
+                learnMoreLine = String.format(messageBundle.getString("warning.emailNotification.learnMoreFallback"), docLabel, docUrl);
+            }
+            System.out.println(Ansi.AUTO.string(String.format("@|bold,yellow %s|@", title)));
+            System.out.println(Ansi.AUTO.string(String.format("@|yellow %s|@", message)));
+            System.out.println(Ansi.AUTO.string(String.format("@|yellow %s|@", learnMoreLine)));
+        }
+    }
+
+    private static String createOsc8Hyperlink(String linkText, String url) {
+        String osc8Start = "\u001B]8;;";
+        String osc8End = "\u001B\\";
+        return osc8Start + url + osc8End + linkText + osc8Start + osc8End;
+    }
+
+    private static boolean supportsOsc8Hyperlinks() {
+        if (System.console() == null) {
+            return false;
+        }
+        if (System.getenv("WT_SESSION") != null) {
+            return true;
+        }
+        String termProgram = System.getenv("TERM_PROGRAM");
+        if ("vscode".equalsIgnoreCase(termProgram) || "iTerm.app".equalsIgnoreCase(termProgram)
+                || "WezTerm".equalsIgnoreCase(termProgram)) {
+            return true;
+        }
+        String vteVersion = System.getenv("VTE_VERSION");
+        return vteVersion != null && !vteVersion.isBlank();
     }
 
     private DynamicAnalyzer getDynamicAnalyzer() throws ParameterException {
@@ -651,4 +693,3 @@ public class InvokeDynamicScan implements Callable<Integer> {
     }
 
 }
-

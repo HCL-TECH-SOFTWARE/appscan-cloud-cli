@@ -23,7 +23,6 @@ import com.hcl.appscan.sdk.CoreConstants;
 public interface ScannerConstants {
 	
 	String EMPTY					= "";					
-	String ENABLE_MAIL_NOTIFICATION			= "EnableMailNotification";		
 	String EXTRA_FIELD				= "ExtraField";				
 	String INCLUDE_VERIFIED_DOMAINS			= "IncludeVerifiedDomains";		
 	String LOGIN_USER				= "LoginUser";				
