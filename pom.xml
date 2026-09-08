@@ -37,7 +37,77 @@
     <jansi.version>2.4.0</jansi.version>
     <picoli.codegen.version>4.7.5</picoli.codegen.version>
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
+    <!-- Transitive dependency versions (pinned for SCAL-PKGDEP-2 compliance) -->
+    <wink.json4j.version>1.4</wink.json4j.version>
+    <logback.core.version>1.6.3</logback.core.version>
+    <slf4j.api.version>2.0.18</slf4j.api.version>
+    <junit.platform.version>1.10.2</junit.platform.version>
+    <opentest4j.version>1.3.0</opentest4j.version>
+    <apiguardian.api.version>1.1.2</apiguardian.api.version>
+    <!-- Plugin versions -->
+    <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
+    <maven.lockfile.plugin.version>5.2.0</maven.lockfile.plugin.version>
+    <cyclonedx.maven.plugin.version>2.8.1</cyclonedx.maven.plugin.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Transitive dependencies pinned for SCAL-PKGDEP-2: ABSOLUTE, STABLE, IMMUTABLE -->
+      <!-- Transitive from appscan.sdk -->
+      <dependency>
+        <groupId>org.apache.wink</groupId>
+        <artifactId>wink-json4j</artifactId>
+        <version>${wink.json4j.version}</version>
+      </dependency>
+      <!-- Transitive from logback-classic -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>${logback.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.api.version}</version>
+      </dependency>
+      <!-- Transitive from junit-jupiter (test scope) -->
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-commons</artifactId>
+        <version>${junit.platform.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-engine</artifactId>
+        <version>${junit.platform.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opentest4j</groupId>
+        <artifactId>opentest4j</artifactId>
+        <version>${opentest4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apiguardian</groupId>
+        <artifactId>apiguardian-api</artifactId>
+        <version>${apiguardian.api.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -97,92 +167,90 @@
           </execution>
         </executions>
       </plugin>
+      <!-- SCAL-PKGDEP-2: Enforce deterministic, absolute, stable, immutable dependency versions -->
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.1.0</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${maven.enforcer.plugin.version}</version>
         <executions>
           <execution>
-            <id>generateManPages</id>
-            <phase>process-classes</phase>
+            <id>enforce-supply-chain-controls</id>
             <goals>
-              <goal>java</goal>
+              <goal>enforce</goal>
             </goals>
+            <configuration>
+              <rules>
+                <!-- Ban version ranges, LATEST/RELEASE meta-versions, and SNAPSHOT dependencies -->
+                <banDynamicVersions>
+                  <allowSnapshots>false</allowSnapshots>
+                </banDynamicVersions>
+                <!-- Ensure consistent transitive dependency versions -->
+                <dependencyConvergence />
+                <!-- Enforce minimum Maven version for reproducible builds -->
+                <requireMavenVersion>
+                  <version>3.9.6</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-release-deps</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <!-- Block SNAPSHOT dependencies in release builds -->
+                <requireReleaseDeps>
+                  <message>SCAL-PKGDEP-2: SNAPSHOT dependencies are not allowed in release builds!</message>
+                  <onlyWhenRelease>true</onlyWhenRelease>
+                </requireReleaseDeps>
+              </rules>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <includeProjectDependencies>true</includeProjectDependencies>
-          <includePluginDependencies>true</includePluginDependencies>
-          <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
-          <arguments>
-            <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
-            <argument>com.hcl.appscan.cli.handlers.AppscanCLIApp</argument>
-          </arguments>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli-codegen</artifactId>
-            <version>${picoli.codegen.version}</version>
-            <type>jar</type>
-          </dependency>
-        </dependencies>
       </plugin>
-
+      <!-- SCAL-PKGDEP-2: Lockfile validation to ensure dependency integrity -->
       <plugin>
-        <groupId>org.asciidoctor</groupId>
-        <artifactId>asciidoctor-maven-plugin</artifactId>
-        <version>2.2.4</version>
-        <dependencies>
-          <dependency>
-            <groupId>org.asciidoctor</groupId>
-            <artifactId>asciidoctorj-pdf</artifactId>
-            <version>${asciidoctorj.pdf.version}</version>
-          </dependency>
-        </dependencies>
+        <groupId>io.github.chains-project</groupId>
+        <artifactId>maven-lockfile</artifactId>
+        <version>${maven.lockfile.plugin.version}</version>
         <executions>
           <execution>
-            <id>output-html</id>
-            <phase>process-classes</phase>
+            <id>validate-lockfile</id>
+            <phase>validate</phase>
             <goals>
-              <goal>process-asciidoc</goal>
+              <goal>validate</goal>
             </goals>
-            <configuration>
-              <attributes>
-              <source-highlighter>rouge</source-highlighter>
-              <imagesdir>./images</imagesdir>
-              <toc>left</toc>
-              <icons>font</icons>
-              <sectanchors>true</sectanchors>
-              <idprefix />
-              <idseparator>-</idseparator>
-              <docinfo1>true</docinfo1>
-              </attributes>
-              <backend>html5</backend>
-            </configuration>
           </execution>
+        </executions>
+      </plugin>
+      <!-- SBOM generation for supply chain traceability -->
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <version>${cyclonedx.maven.plugin.version}</version>
+        <executions>
           <execution>
-            <id>generate-pdf-doc</id>
-            <phase>process-classes</phase>
+            <id>generate-sbom</id>
+            <phase>package</phase>
             <goals>
-              <goal>process-asciidoc</goal>
+              <goal>makeAggregateBom</goal>
             </goals>
-            <configuration>
-              <backend>pdf</backend>
-              <outputDirectory>${project.build.directory}/generated-pdf-docs</outputDirectory>
-              <attributes>
-                <source-highlighter>rouge</source-highlighter>
-                <icons>font</icons>
-                <pagenums />
-                <toc />
-                <idprefix />
-                <idseparator>-</idseparator>
-              </attributes>
-            </configuration>
           </execution>
         </executions>
         <configuration>
-          <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
+          <projectType>application</projectType>
+          <schemaVersion>1.5</schemaVersion>
+          <includeBomSerialNumber>true</includeBomSerialNumber>
+          <includeCompileScope>true</includeCompileScope>
+          <includeProvidedScope>true</includeProvidedScope>
+          <includeRuntimeScope>true</includeRuntimeScope>
+          <includeSystemScope>true</includeSystemScope>
+          <includeTestScope>false</includeTestScope>
+          <includeLicenseText>false</includeLicenseText>
+          <outputFormat>all</outputFormat>
+          <outputName>bom</outputName>
         </configuration>
       </plugin>
     </plugins>
@@ -193,6 +261,27 @@
       <id>release</id>
       <build>
         <plugins>
+          <!-- SCAL-PKGDEP-2: Enforce non-SNAPSHOT project version during releases -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <version>${maven.enforcer.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>enforce-release-version</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireReleaseVersion>
+                      <message>SCAL-PKGDEP-2: SNAPSHOT project version is not allowed for release builds!</message>
+                    </requireReleaseVersion>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
@@ -242,6 +331,102 @@
               <useReleaseProfile>false</useReleaseProfile>
               <releaseProfiles>release</releaseProfiles>
               <goals>deploy</goals>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- SCVS-4.18: Documentation generation isolated to dedicated profile to reduce
+         third-party code execution during standard builds. Activate with: mvn -P generate-docs -->
+    <profile>
+      <id>generate-docs</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>generateManPages</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includeProjectDependencies>true</includeProjectDependencies>
+              <includePluginDependencies>true</includePluginDependencies>
+              <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
+              <arguments>
+                <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
+                <argument>com.hcl.appscan.cli.handlers.AppscanCLIApp</argument>
+              </arguments>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>info.picocli</groupId>
+                <artifactId>picocli-codegen</artifactId>
+                <version>${picoli.codegen.version}</version>
+                <type>jar</type>
+              </dependency>
+            </dependencies>
+          </plugin>
+          <plugin>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctor-maven-plugin</artifactId>
+            <version>${asciidoctor.maven.plugin.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctorj-pdf</artifactId>
+                <version>${asciidoctorj.pdf.version}</version>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>output-html</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>process-asciidoc</goal>
+                </goals>
+                <configuration>
+                  <attributes>
+                    <source-highlighter>rouge</source-highlighter>
+                    <imagesdir>./images</imagesdir>
+                    <toc>left</toc>
+                    <icons>font</icons>
+                    <sectanchors>true</sectanchors>
+                    <idprefix />
+                    <idseparator>-</idseparator>
+                    <docinfo1>true</docinfo1>
+                  </attributes>
+                  <backend>html5</backend>
+                </configuration>
+              </execution>
+              <execution>
+                <id>generate-pdf-doc</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>process-asciidoc</goal>
+                </goals>
+                <configuration>
+                  <backend>pdf</backend>
+                  <outputDirectory>${project.build.directory}/generated-pdf-docs</outputDirectory>
+                  <attributes>
+                    <source-highlighter>rouge</source-highlighter>
+                    <icons>font</icons>
+                    <pagenums />
+                    <toc />
+                    <idprefix />
+                    <idseparator>-</idseparator>
+                  </attributes>
+                </configuration>
+              </execution>
+            </executions>
+            <configuration>
+              <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
             </configuration>
           </plugin>
         </plugins>

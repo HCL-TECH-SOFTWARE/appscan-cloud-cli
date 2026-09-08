@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2023,2024 HCL America, Inc.
+ * Copyright 2023, 2026 HCL America, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -455,43 +455,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
 
     private void warnIfEmailNotificationProvided() {
         if (emailNotificationProvided) {
-            String title = messageBundle.getString("warning.emailNotification.title");
             String message = messageBundle.getString("warning.emailNotification.message");
-            String docLabel = messageBundle.getString("warning.emailNotification.docLabel");
-            String docUrl = messageBundle.getString("warning.emailNotification.docUrl");
-            String learnMoreLine;
-            if (supportsOsc8Hyperlinks()) {
-                learnMoreLine = String.format(messageBundle.getString("warning.emailNotification.learnMore"),
-                        createOsc8Hyperlink(docLabel, docUrl));
-            } else {
-                learnMoreLine = String.format(messageBundle.getString("warning.emailNotification.learnMoreFallback"), docLabel, docUrl);
-            }
-            System.out.println(Ansi.AUTO.string(String.format("@|bold,yellow %s|@", title)));
             System.out.println(Ansi.AUTO.string(String.format("@|yellow %s|@", message)));
-            System.out.println(Ansi.AUTO.string(String.format("@|yellow %s|@", learnMoreLine)));
         }
-    }
-
-    private static String createOsc8Hyperlink(String linkText, String url) {
-        String osc8Start = "\u001B]8;;";
-        String osc8End = "\u001B\\";
-        return osc8Start + url + osc8End + linkText + osc8Start + osc8End;
-    }
-
-    private static boolean supportsOsc8Hyperlinks() {
-        if (System.console() == null) {
-            return false;
-        }
-        if (System.getenv("WT_SESSION") != null) {
-            return true;
-        }
-        String termProgram = System.getenv("TERM_PROGRAM");
-        if ("vscode".equalsIgnoreCase(termProgram) || "iTerm.app".equalsIgnoreCase(termProgram)
-                || "WezTerm".equalsIgnoreCase(termProgram)) {
-            return true;
-        }
-        String vteVersion = System.getenv("VTE_VERSION");
-        return vteVersion != null && !vteVersion.isBlank();
     }
 
     private DynamicAnalyzer getDynamicAnalyzer() throws ParameterException {
