@@ -211,14 +211,10 @@ java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=<your_api_key> --secr
 Display help information about the specified command.
 
 ### Note
-If a scanName contains special characters, enclose scanName in double quotes. For exampl : --scanName="Test Rel" or --scanName="Test>Rel".
+- If a scanName contains special characters, enclose scanName in double quotes. For exampl : --scanName="Test Rel" or --scanName="Test>Rel".
 
-**Warning: Email Notification setting is obsolete**  
-The email notification setting for scans is obsolete, but the scan continues normally. Manage email notifications in your AppScan on Cloud notification settings.  
-To learn more, see [Email notifications](https://help.hcl-software.com/appscan/ASoC/r_email_notifications.html).
-
-Existing pipelines that pass `--emailNotification=true` or `--emailNotification=false` continue to create scans; the supplied value is ignored and the CLI displays this warning.
-
+- Starting 1.2.1 release, the email notification setting for scans is obsolete. To learn more, see [Email notifications](https://help.hcl-software.com/appscan/ASoC/r_email_notifications.html).
+Existing pipelines that pass --emailNotification=true or --emailNotification=false will continue to create scans; however the supplied value is ignored.
 ## License
 
 All files in this project are licensed under [Apache License 2.0](LICENSE).

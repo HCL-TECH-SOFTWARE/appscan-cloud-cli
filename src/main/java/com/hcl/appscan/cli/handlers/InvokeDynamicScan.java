@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2023, 2026 HCL Technologies Ltd.
+ * Copyright HCL Technologies Ltd. 2023, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,6 +217,9 @@ public class InvokeDynamicScan implements Callable<Integer> {
             throw new ParameterException(spec.commandLine(),
                     String.format(messageBundle.getString("error.invalid.emailNotification"), value));
         }
+        // "emailNotificationProvided" means "the user included this option in the command."
+        // We no longer use its true/false value, but we keep this flag so we can show a warning
+        // only to people who still use this old option.
         emailNotificationProvided = true;
     }
 
