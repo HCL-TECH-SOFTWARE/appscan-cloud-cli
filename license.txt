@@ -1,4 +1,4 @@
-Copyright 2023 HCL America Inc.
+Copyright HCL Technologies Ltd. 2023, 2026
 
  
 

@@ -48,7 +48,6 @@ When the scan is complete, the scan report and scan log zip file are downloaded 
  
 ~~~bash  
 Usage:  invokedynamicscan [-hV] [--allowIntervention]
-                                 [--emailNotification]
                                  [--failBuildNonCompliance] [--waitForResults]
                                  --appId=<appId> --key=<key>
                                  [--loginPassword=<loginPassword>]
@@ -86,9 +85,6 @@ Options:
                               balance between speed and issue coverage. Valid
                               values : Fast, Faster, Fastest, NoOptimization
                               Default: fast
-      --emailNotification   [Optional] Send the user an email when analysis is
-                              complete. Valid values : true , false
-                              Default: false
       --reportFormat=<reportFormat>
                             [Optional] Specify format for the scan result
                               report. Valid values : html, pdf, csv, xml.
@@ -215,8 +211,10 @@ java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=<your_api_key> --secr
 Display help information about the specified command.
 
 ### Note
-If a scanName contains special characters, enclose scanName in double quotes. For exampl : --scanName="Test Rel" or --scanName="Test>Rel".
+- If a scanName contains special characters, enclose scanName in double quotes. For exampl : --scanName="Test Rel" or --scanName="Test>Rel".
 
+- Starting 1.2.1 release, the email notification setting for scans is obsolete. To learn more, see [Email notifications](https://help.hcl-software.com/appscan/ASoC/r_email_notifications.html).
+Existing pipelines that pass --emailNotification=true or --emailNotification=false will continue to create scans; however the supplied value is ignored.
 ## License
 
 All files in this project are licensed under [Apache License 2.0](LICENSE).

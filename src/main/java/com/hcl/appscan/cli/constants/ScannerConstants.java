@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2023 HCL America, Inc.
+ * Copyright HCL Technologies Ltd. 2023, 2026
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.hcl.appscan.sdk.CoreConstants;
 public interface ScannerConstants {
 	
 	String EMPTY					= "";					
-	String ENABLE_MAIL_NOTIFICATION			= "EnableMailNotification";		
 	String EXTRA_FIELD				= "ExtraField";				
 	String INCLUDE_VERIFIED_DOMAINS			= "IncludeVerifiedDomains";		
 	String LOGIN_USER				= "LoginUser";				
