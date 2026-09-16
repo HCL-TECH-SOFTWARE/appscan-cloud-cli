@@ -33,13 +33,15 @@ import static picocli.CommandLine.Help.Ansi.Style.italic;
         subcommands = {
                 GetApplicationIds.class,
                 InvokeDynamicScan.class,
+                InvokeStaticScan.class,
+                InvokeSCAScan.class,
                 GetPresenceIds.class,
                 HelpCommand.class
         },
         mixinStandardHelpOptions = true, version = "AppScan CLI v1.0",headerHeading = "@|bold,underline Usage|@:%n%n",
         synopsisHeading = "%n",
-        header = "HCL AppScan CLI Utility to streamline Dynamic Application Security Testing.",
-        description = "The HCL AppScan command-line utility (CLI) is designed to streamline Dynamic Application Security Testing within a Continuous Integration and Continuous Deployment (CICD) environment. This tool can be seamlessly integrated into any CICD platform or used independently." ,
+        header = "HCL AppScan CLI Utility to streamline Application Security Testing (DAST, SAST, SCA).",
+        description = "The HCL AppScan command-line utility (CLI) is designed to streamline Dynamic Application Security Testing (DAST), Static Application Security Testing (SAST), and Software Composition Analysis (SCA) within a Continuous Integration and Continuous Deployment (CICD) environment. This tool can be seamlessly integrated into any CICD platform or used independently." ,
         optionListHeading = "%n@|bold,underline Options|@:%n" ,
         descriptionHeading = "%n@|bold,underline Description|@:%n%n"
 )

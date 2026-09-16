@@ -232,14 +232,67 @@
     {
       "groupId": "com.hcl",
       "artifactId": "appscan.sdk",
-      "version": "1.1.5",
+      "version": "1.1.12",
       "checksumAlgorithm": "SHA-256",
-      "checksum": "82cdf838f1c3bf9ee13f29ac9fc4128a7b1f67c3d67693b09cb5222ad4a096d8",
+      "checksum": "9deb01123aa554005e70c40ee2728ee5db07d16ef63cb592393db0159e4ee948",
       "scope": "compile",
-      "selectedVersion": "1.1.5",
+      "selectedVersion": "1.1.12",
       "included": true,
-      "id": "com.hcl:appscan.sdk:1.1.5",
+      "id": "com.hcl:appscan.sdk:1.1.12",
       "children": [
+        {
+          "groupId": "org.apache.commons",
+          "artifactId": "commons-compress",
+          "version": "1.26.0",
+          "checksumAlgorithm": "SHA-256",
+          "checksum": "051aceb8bbcc62d0f5b2b8ac72c53767f9c59bfbd050151e65bef6f51c8ed9c9",
+          "scope": "compile",
+          "selectedVersion": "1.26.0",
+          "included": true,
+          "id": "org.apache.commons:commons-compress:1.26.0",
+          "parent": "com.hcl:appscan.sdk:1.1.12",
+          "children": [
+            {
+              "groupId": "commons-io",
+              "artifactId": "commons-io",
+              "version": "2.17.0",
+              "checksumAlgorithm": "SHA-256",
+              "checksum": "4aa4ca48f3dfd30b78220b7881d8cb93eac4093ec94361b6befa9487998a550b",
+              "scope": "compile",
+              "selectedVersion": "2.17.0",
+              "included": false,
+              "id": "commons-io:commons-io:2.17.0",
+              "parent": "org.apache.commons:commons-compress:1.26.0",
+              "children": []
+            },
+            {
+              "groupId": "org.apache.commons",
+              "artifactId": "commons-lang3",
+              "version": "3.14.0",
+              "checksumAlgorithm": "SHA-256",
+              "checksum": "7b96bf3ee68949abb5bc465559ac270e0551596fa34523fddf890ec418dde13c",
+              "scope": "compile",
+              "selectedVersion": "3.14.0",
+              "included": true,
+              "id": "org.apache.commons:commons-lang3:3.14.0",
+              "parent": "org.apache.commons:commons-compress:1.26.0",
+              "children": []
+            }
+          ]
+        },
+        {
+          "groupId": "commons-io",
+          "artifactId": "commons-io",
+          "version": "2.17.0",
+          "checksumAlgorithm": "SHA-256",
+          "checksum": "4aa4ca48f3dfd30b78220b7881d8cb93eac4093ec94361b6befa9487998a550b",
+          "scope": "compile",
+          "selectedVersion": "2.17.0",
+          "included": true,
+          "id": "commons-io:commons-io:2.17.0",
+          "parent": "com.hcl:appscan.sdk:1.1.12",
+          "children": []
+        },
         {
           "groupId": "org.apache.wink",
           "artifactId": "wink-json4j",
@@ -250,7 +303,7 @@
           "selectedVersion": "1.4",
           "included": true,
           "id": "org.apache.wink:wink-json4j:1.4",
-          "parent": "com.hcl:appscan.sdk:1.1.5",
+          "parent": "com.hcl:appscan.sdk:1.1.12",
           "children": []
         }
       ]

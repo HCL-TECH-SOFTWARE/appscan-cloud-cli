@@ -32,13 +32,15 @@
     <asciidoctorj.pdf.version>2.3.9</asciidoctorj.pdf.version>
     <asciidoctorj.version>2.5.10</asciidoctorj.version>
     <picoli.version>4.7.5</picoli.version>
-    <appscan.sdk.version>1.1.5</appscan.sdk.version>
+    <appscan.sdk.version>1.1.12</appscan.sdk.version>
     <logback.classic.version>1.6.3</logback.classic.version>
     <jansi.version>2.4.0</jansi.version>
     <picoli.codegen.version>4.7.5</picoli.codegen.version>
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
     <!-- Transitive dependency versions (pinned for SCAL-PKGDEP-2 compliance) -->
     <wink.json4j.version>1.4</wink.json4j.version>
+    <commons.compress.version>1.26.0</commons.compress.version>
+    <commons.io.version>2.17.0</commons.io.version>
     <logback.core.version>1.6.3</logback.core.version>
     <slf4j.api.version>2.0.18</slf4j.api.version>
     <junit.platform.version>1.10.2</junit.platform.version>
@@ -58,6 +60,17 @@
         <groupId>org.apache.wink</groupId>
         <artifactId>wink-json4j</artifactId>
         <version>${wink.json4j.version}</version>
+      </dependency>
+      <!-- Transitive from appscan.sdk (new in 1.1.12) -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commons.compress.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons.io.version}</version>
       </dependency>
       <!-- Transitive from logback-classic -->
       <dependency>
