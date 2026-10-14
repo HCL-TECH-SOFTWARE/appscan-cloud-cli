@@ -45,8 +45,6 @@ public interface ScannerConstants {
 	String STATIC_ANALYZER				= "Static Analyzer";			
 	String SOFTWARE_COMPOSITION_ANALYZER		= "Software Composition Analyzer";
 
-	String SCAN_SPEED				= "scanSpeed";
-
 	String CUSTOM					= "Custom";				
 	String PRODUCTION				= "Production";				
 	String STAGING					= "Staging";				

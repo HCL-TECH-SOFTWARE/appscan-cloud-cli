@@ -25,6 +25,7 @@ import com.hcl.appscan.cli.exception.AbortException;
 import com.hcl.appscan.cli.results.ScanProgress;
 import com.hcl.appscan.cli.results.ScanResults;
 import com.hcl.appscan.cli.scanners.Scanner;
+import com.hcl.appscan.cli.scanners.SoftwareCompositionAnalyzer;
 import com.hcl.appscan.cli.scanners.StaticAnalyzer;
 import com.hcl.appscan.cli.scanners.ValidationUtil;
 import com.hcl.appscan.sdk.CoreConstants;
@@ -58,7 +59,6 @@ import static picocli.CommandLine.*;
 import static picocli.CommandLine.Help.*;
 
 enum ScanMethod { createIRX, uploadDirect }
-enum ScanSpeed { normal, fast, faster, fastest }
 
 @Command(name = "invokesastscan", sortOptions = false, mixinStandardHelpOptions = true, version = "1.0",
         description = "This command configures and triggers a Static Application Security Testing (SAST) scan on AppScan on Cloud or AppScan 360. It generates an IRX file or uploads source code directly, submits the scan, and retrieves the results including vulnerabilities, reports, and scan logs.",
@@ -82,23 +82,21 @@ public class InvokeStaticScan implements Callable<Integer> {
     private String target;
     @Option(names = {"--scanMethod"}, defaultValue = "createIRX", description = "[Optional] The scan method to use. 'createIRX' generates an IRX file locally using SAClient. 'uploadDirect' uploads source files directly. Valid values : ${COMPLETION-CANDIDATES}", required = false, showDefaultValue = Visibility.ALWAYS, order = 6)
     private ScanMethod scanMethod;
-    @Option(names = {"--scanSpeed"}, description = "[Optional] Scan speed setting. Valid values : ${COMPLETION-CANDIDATES}", required = false, order = 7)
-    private ScanSpeed scanSpeed;
-    @Option(names = {"--openSourceOnly"}, defaultValue = "false", paramLabel = "BOOLEAN", description = "[Optional] When set to true, only open source analysis (SCA) is performed.", required = false, showDefaultValue = Visibility.ALWAYS, order = 8)
+    @Option(names = {"--openSourceOnly"}, defaultValue = "false", paramLabel = "BOOLEAN", description = "[Optional] When set to true, only open source analysis (SCA) is performed.", required = false, showDefaultValue = Visibility.ALWAYS, order = 7)
     private boolean openSourceOnly;
-    @Option(names = {"--sourceCodeOnly"}, defaultValue = "false", paramLabel = "BOOLEAN", description = "[Optional] When set to true, only source code is analyzed (no binary analysis). Not applicable with uploadDirect scan method.", required = false, showDefaultValue = Visibility.ALWAYS, order = 9)
+    @Option(names = {"--staticAnalysisOnly"}, defaultValue = "false", paramLabel = "BOOLEAN", description = "[Optional] Only run static analysis. Do not run SCA (Software Composition Analysis).", required = false, showDefaultValue = Visibility.ALWAYS, order = 8)
+    private boolean staticAnalysisOnly;
+    @Option(names = {"--sourceCodeOnly"}, defaultValue = "true", paramLabel = "BOOLEAN", description = "[Optional] When set to true, only source code is analyzed (no binary analysis). Not applicable with uploadDirect scan method.", required = false, showDefaultValue = Visibility.ALWAYS, order = 9)
     private boolean sourceCodeOnly;
-    @Option(names = {"--includeSCA"}, defaultValue = "true", paramLabel = "BOOLEAN", description = "[Optional] Include Software Composition Analysis (SCA) in the scan.", required = false, showDefaultValue = Visibility.ALWAYS, order = 10)
-    private boolean includeSCA;
-    @Option(names = {"--reportFormat"}, defaultValue = "html", description = "[Optional] Specify the format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false, showDefaultValue = Visibility.ALWAYS, order = 11)
+    @Option(names = {"--reportFormat"}, defaultValue = "html", description = "[Optional] Specify the format for the scan result report. Valid values : ${COMPLETION-CANDIDATES}.", required = false, showDefaultValue = Visibility.ALWAYS, order = 10)
     private ReportFormat reportFormat;
     private Boolean waitForResults;
     private Boolean failBuildNonCompliance;
-    @Option(names = {"--rescan"}, defaultValue = "false", paramLabel = "BOOLEAN", description = "[Optional] When set to true, performs a rescan of an existing scan specified by --scanId.", required = false, showDefaultValue = Visibility.ALWAYS, order = 14)
-    private boolean rescan;
-    @Option(names = {"--scanId"}, description = "[Optional] The scan ID to rescan. Required when --rescan is set to true.", required = false, order = 15)
-    private String scanId;
-    @Option(names = {"--serviceUrl"}, description = "[Optional] AppScan Service URL", required = false, order = 16)
+    @Option(names = {"--sastScanId"}, description = "[Optional] The ID of an existing SAST scan to use for running a rescan.", required = false, order = 13)
+    private String sastScanId;
+    @Option(names = {"--scaScanId"}, description = "[Optional] The ID of an existing SCA scan to use for running a rescan.", required = false, order = 14)
+    private String scaScanId;
+    @Option(names = {"--serviceUrl"}, description = "[Optional] AppScan Service URL", required = false, order = 15)
     private String serviceUrl;
     private Boolean acceptssl;
 
@@ -112,7 +110,7 @@ public class InvokeStaticScan implements Callable<Integer> {
         target = targetFile.getAbsolutePath();
     }
 
-    @Option(names = {"--acceptssl"}, defaultValue = "false", paramLabel = "BOOLEAN", description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360. Not applicable to AppScan on Cloud.", required = false, showDefaultValue = Visibility.ALWAYS, order = 17)
+    @Option(names = {"--acceptssl"}, defaultValue = "false", paramLabel = "BOOLEAN", description = "[Optional] Ignore untrusted certificates when connecting to AppScan 360. Not applicable to AppScan on Cloud.", required = false, showDefaultValue = Visibility.ALWAYS, order = 16)
     public void setAcceptssl(String value) {
         if (null != key && !key.startsWith("local_") && (!value.isBlank() && !"false".equalsIgnoreCase(value))) {
             logger.warn(messageBundle.getString("error.acceptssl.without.a360"));
@@ -140,7 +138,7 @@ public class InvokeStaticScan implements Callable<Integer> {
         failBuildNonCompliance = Boolean.parseBoolean(value);
     }
 
-    @Option(names = {"--waitForResults"}, defaultValue = "true", paramLabel = "BOOLEAN", description = "[Optional] Suspend the job until the security analysis results are available.", required = false, showDefaultValue = Visibility.ALWAYS, order = 12)
+    @Option(names = {"--waitForResults"}, defaultValue = "false", paramLabel = "BOOLEAN", description = "[Optional] Suspend the job until the security analysis results are available.", required = false, showDefaultValue = Visibility.ALWAYS, order = 11)
     public void setWaitForResults(String value) {
         boolean invalid = !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value);
         if (invalid) {
@@ -185,9 +183,8 @@ public class InvokeStaticScan implements Callable<Integer> {
         }
 
         try {
-            Optional<ScanResults> results = runScanAndGetResults();
-            if (results.isPresent() && (results.get().getTotalFindings() > totalissuesgt || results.get().getCriticalCount() > criticalissuesgt ||
-                    results.get().getHighCount() > highissuesgt || results.get().getMediumCount() > medissuesgt || results.get().getLowCount() > lowissuesgt)) {
+            List<ScanResults> results = runScanAndGetResults();
+            if (exceedsThresholds(results, totalissuesgt, criticalissuesgt, highissuesgt, medissuesgt, lowissuesgt)) {
                 logger.error(messageBundle.getString("error.threshold.exceeded"));
                 return 10;
             } else {
@@ -199,14 +196,25 @@ public class InvokeStaticScan implements Callable<Integer> {
         }
     }
 
+    private boolean exceedsThresholds(List<ScanResults> results, int totalissuesgt, int criticalissuesgt,
+                                      int highissuesgt, int medissuesgt, int lowissuesgt) {
+        long totalFindings = results.stream().mapToLong(ScanResults::getTotalFindings).sum();
+        long criticalFindings = results.stream().mapToLong(ScanResults::getCriticalCount).sum();
+        long highFindings = results.stream().mapToLong(ScanResults::getHighCount).sum();
+        long mediumFindings = results.stream().mapToLong(ScanResults::getMediumCount).sum();
+        long lowFindings = results.stream().mapToLong(ScanResults::getLowCount).sum();
+        return totalFindings > totalissuesgt || criticalFindings > criticalissuesgt ||
+                highFindings > highissuesgt || mediumFindings > medissuesgt || lowFindings > lowissuesgt;
+    }
+
     private int invokeStaticScan() throws Exception {
         if (!waitForResults && failBuildNonCompliance) {
             logger.error(messageBundle.getString("error.invalid.waitforresults.withfailBuildNonCompliance"));
             return 2;
         }
         try {
-            Optional<ScanResults> results = runScanAndGetResults();
-            if (failBuildNonCompliance && results.isPresent() && results.get().getTotalFindings() > 0) {
+            List<ScanResults> results = runScanAndGetResults();
+            if (failBuildNonCompliance && results.stream().anyMatch(result -> result.getTotalFindings() > 0)) {
                 logger.error(messageBundle.getString("error.noncomplaint.issues"));
                 return 12;
             }
@@ -218,7 +226,9 @@ public class InvokeStaticScan implements Callable<Integer> {
         return 0;
     }
 
-    private Optional<ScanResults> runScanAndGetResults() throws Exception {
+    private List<ScanResults> runScanAndGetResults() throws Exception {
+        validateScanOptions();
+
         CloudAuthenticationHandler authHandler;
         if (null != serviceUrl && key.startsWith("local_")) {
             if (serviceUrl.endsWith("/")) {
@@ -247,36 +257,78 @@ public class InvokeStaticScan implements Callable<Integer> {
                     String.format(messageBundle.getString("error.invalid.credentials")));
         }
 
-        if (!ServiceUtil.hasSastEntitlement(authHandler)) {
+        if (!openSourceOnly && !ServiceUtil.hasSastEntitlement(authHandler)) {
             throw new ParameterException(spec.commandLine(),
                     messageBundle.getString("error.sast.entitlement"));
         }
 
-        if (includeSCA && !ServiceUtil.hasScaEntitlement(authHandler)) {
+        boolean includeSoftwareCompositionAnalysis = !staticAnalysisOnly && !openSourceOnly;
+        if ((openSourceOnly || includeSoftwareCompositionAnalysis) && !ServiceUtil.hasScaEntitlement(authHandler)) {
+            if (openSourceOnly || hasScaScanId()) {
+                throw new ParameterException(spec.commandLine(),
+                        messageBundle.getString("error.sca.entitlement"));
+            }
             logger.warn(messageBundle.getString("warning.sca.no.entitlement"));
-            includeSCA = false;
+            includeSoftwareCompositionAnalysis = false;
         }
 
-        if (rescan && (scanId == null || scanId.isEmpty())) {
+        if (isCombinedScan() && (hasSastScanId() || hasScaScanId()) && includeSoftwareCompositionAnalysis) {
+            List<ScanResults> results = new ArrayList<>();
+            results.addAll(runSubmittedScan(getStaticScan(authHandler, false, "SAST"), authHandler));
+            results.addAll(runSubmittedScan(getScaScan(authHandler, "SCA"), authHandler));
+            return results;
+        }
+
+        if (openSourceOnly) {
+            return runSubmittedScan(getScaScan(authHandler, null), authHandler);
+        }
+
+        return runSubmittedScan(getStaticScan(authHandler, includeSoftwareCompositionAnalysis, null), authHandler);
+    }
+
+    private void validateScanOptions() {
+        if (staticAnalysisOnly && openSourceOnly) {
             throw new ParameterException(spec.commandLine(),
-                    messageBundle.getString("error.rescan.requires.scanId"));
+                    messageBundle.getString("error.staticAnalysisOnly.openSourceOnly"));
         }
 
-        if (sourceCodeOnly && ScanMethod.uploadDirect.equals(scanMethod)) {
+        if (staticAnalysisOnly && hasScaScanId()) {
+            throw new ParameterException(spec.commandLine(),
+                    messageBundle.getString("error.scaScanId.staticAnalysisOnly"));
+        }
+
+        if (openSourceOnly && hasSastScanId()) {
+            throw new ParameterException(spec.commandLine(),
+                    messageBundle.getString("error.sastScanId.openSourceOnly"));
+        }
+
+        if (!openSourceOnly && sourceCodeOnly && ScanMethod.uploadDirect.equals(scanMethod)) {
             throw new ParameterException(spec.commandLine(),
                     messageBundle.getString("error.sourceCodeOnly.uploadDirect"));
         }
+    }
 
+    private boolean isCombinedScan() {
+        return !staticAnalysisOnly && !openSourceOnly;
+    }
+
+    private boolean hasSastScanId() {
+        return sastScanId != null && !sastScanId.isBlank();
+    }
+
+    private boolean hasScaScanId() {
+        return scaScanId != null && !scaScanId.isBlank();
+    }
+
+    private List<ScanResults> runSubmittedScan(IScan scan, CloudAuthenticationHandler authHandler) throws Exception {
         Optional<ScanResults> results = Optional.empty();
-        IScan scan = null;
         CloudResultsProvider resultsProvider = null;
         try {
-            IProgress progress = new ScanProgress();
-            scan = getScan(authHandler, progress);
             scan.run();
             if (!waitForResults) {
-                return results;
+                return Collections.emptyList();
             }
+            IProgress progress = new ScanProgress();
             resultsProvider = new NonCompliantIssuesResultProvider(scan.getScanId(), scan.getType(), scan.getServiceProvider(), progress);
             results = getScanResults(scan, progress, authHandler, resultsProvider);
             processScanResults(results, resultsProvider, scan);
@@ -289,7 +341,7 @@ public class InvokeStaticScan implements Callable<Integer> {
             if (null != scan && null != resultsProvider)
                 getScanLogs(scan, resultsProvider);
         }
-        return results;
+        return results.map(Collections::singletonList).orElseGet(Collections::emptyList);
     }
 
     private void processScanResults(Optional<ScanResults> results, IResultsProvider resultsProvider, IScan scan) throws Exception {
@@ -321,46 +373,54 @@ public class InvokeStaticScan implements Callable<Integer> {
         }
     }
 
-    private IScan getScan(CloudAuthenticationHandler authHandler, IProgress progress) throws Exception {
-        IScanFactory factory;
-        if (openSourceOnly) {
-            factory = new SCAScanFactory();
-        } else {
-            factory = new SASTScanFactory();
-        }
-        StaticAnalyzer scanner = getStaticAnalyzer();
-        Map<String, String> properties = getScanProperties(scanner, authHandler);
-        return factory.create(properties, progress, authHandler);
+    private IScan getStaticScan(CloudAuthenticationHandler authHandler, boolean includeSoftwareCompositionAnalysis, String scanNameSuffix) throws Exception {
+        IScanFactory factory = new SASTScanFactory();
+        StaticAnalyzer scanner = getStaticAnalyzer(includeSoftwareCompositionAnalysis);
+        Map<String, String> properties = getScanProperties(scanner, authHandler, "SAST", scanNameSuffix);
+        return factory.create(properties, new ScanProgress(), authHandler);
     }
 
-    private Map<String, String> getScanProperties(Scanner scanner, CloudAuthenticationHandler authHandler) {
+    private IScan getScaScan(CloudAuthenticationHandler authHandler, String scanNameSuffix) throws Exception {
+        IScanFactory factory = new SCAScanFactory();
+        SoftwareCompositionAnalyzer scanner = getSoftwareCompositionAnalyzer();
+        Map<String, String> properties = getScanProperties(scanner, authHandler, "SCA", scanNameSuffix);
+        return factory.create(properties, new ScanProgress(), authHandler);
+    }
+
+    private Map<String, String> getScanProperties(Scanner scanner, CloudAuthenticationHandler authHandler, String defaultScanNamePrefix, String scanNameSuffix) {
         Map<String, String> properties = scanner.getProperties();
         properties.put(CoreConstants.SCANNER_TYPE, scanner.getType());
         properties.put(CoreConstants.APP_ID, appId);
+        String timestamp = SystemUtil.getTimeStamp();
+        String configuredScanName;
         if (null == scanName || "".equals(scanName)) {
-            scanName = "SAST_" + SystemUtil.getTimeStamp() + "_" + target;
+            configuredScanName = defaultScanNamePrefix + "_" + timestamp + "_" + target;
         } else {
-            scanName = scanName + "_" + SystemUtil.getTimeStamp();
+            configuredScanName = scanName + (scanNameSuffix == null ? "" : "_" + scanNameSuffix) + "_" + timestamp;
         }
-        properties.put(CoreConstants.SCAN_NAME, scanName);
+        properties.put(CoreConstants.SCAN_NAME, configuredScanName);
         properties.put(CoreConstants.SERVER_URL, authHandler.getServer());
         properties.put(CoreConstants.ACCEPT_INVALID_CERTS, Boolean.toString(authHandler.getacceptInvalidCerts()));
         properties.put(CLIENT_TYPE, LoginUtility.getClientType());
         return properties;
     }
 
-    private StaticAnalyzer getStaticAnalyzer() {
+    private StaticAnalyzer getStaticAnalyzer(boolean includeSoftwareCompositionAnalysis) {
         StaticAnalyzer scanner = new StaticAnalyzer(target);
-        scanner.setOpenSourceOnly(openSourceOnly);
         scanner.setSourceCodeOnly(sourceCodeOnly);
-        scanner.setIncludeSCA(includeSCA);
+        scanner.setIncludeSoftwareCompositionAnalysis(includeSoftwareCompositionAnalysis);
         scanner.setScanMethod(scanMethod.name());
-        if (scanSpeed != null) {
-            scanner.setScanSpeed(scanSpeed.name());
+        if (hasSastScanId()) {
+            scanner.setScanId(sastScanId);
         }
-        scanner.setRescan(rescan);
-        if (scanId != null) {
-            scanner.setScanId(scanId);
+        return scanner;
+    }
+
+    private SoftwareCompositionAnalyzer getSoftwareCompositionAnalyzer() {
+        SoftwareCompositionAnalyzer scanner = new SoftwareCompositionAnalyzer(target);
+        scanner.setRescan(hasScaScanId());
+        if (hasScaScanId()) {
+            scanner.setScanId(scaScanId);
         }
         return scanner;
     }
