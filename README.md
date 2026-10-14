@@ -34,10 +34,10 @@ Commands:
 
 Examples:
 For AppScan on Cloud:
-java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=<your_api_key> --secret=<your_api_secret>
+java -jar appscan-cloud-cli-1.3.0.jar getapplications --key=<your_api_key> --secret=<your_api_secret>
 
 For AppScan 360°:
-java -jar appscan-cloud-cli-1.2.0.jar getapplications --key=<your_api_key> --secret=<your_api_secret> --serviceUrl=<AppScan 360° URL> --acceptssl=false
+java -jar appscan-cloud-cli-1.3.0.jar getapplications --key=<your_api_key> --secret=<your_api_secret> --serviceUrl=<AppScan 360° URL> --acceptssl=false
 
 ~~~
 
@@ -141,12 +141,12 @@ Options:
 Examples:
 For AppScan on Cloud:
 
-java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
+java -jar appscan-cloud-cli-1.3.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
 --appId=<your_asoc_app_id> --scanName=test_scan --target==https://demo.testfire.net
 
 For AppScan 360°:
 
-java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
+java -jar appscan-cloud-cli-1.3.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
 --appId=<your_appscan360_app_id> --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=<AppScan 360° URL> --acceptssl=false
 
 Commands:
@@ -181,12 +181,12 @@ Commands:
 Examples:
 For AppScan on Cloud:
 
-java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
+java -jar appscan-cloud-cli-1.3.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
 --appId=<your_asoc_app_id> --scanName=test_scan --target==https://demo.testfire.net failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10        
 
 For AppScan 360°:
 
-java -jar appscan-cloud-cli-1.2.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
+java -jar appscan-cloud-cli-1.3.0.jar invokedynamicscan --key=<your_api_key> --secret=<your_api_secret>
 --appId=<your_appscan360_app_id> --scanName=test_scan --target==https://demo.testfire.net --serviceUrl=<AppScan 360° URL> --acceptssl=false failbuildif --highissuesgt 5 --criticalissuesgt 0 --medissuesgt 10 --lowissuesgt 10  
 ~~~
 
@@ -202,7 +202,7 @@ Get list of presence id's from Appscan on Cloud
       --key=<key>         [Required] Appscan on Cloud API Key
       --secret=<secret>   [Required] Appscan on Cloud API Secret
 Examples:
-java -jar appscan-cloud-cli-1.2.0.jar getpresenceids --key=<your_api_key> --secret=<your_api_secret>
+java -jar appscan-cloud-cli-1.3.0.jar getpresenceids --key=<your_api_key> --secret=<your_api_secret>
 
 ~~~
 
@@ -213,7 +213,7 @@ Display help information about the specified command.
 ### Note
 - If a scanName contains special characters, enclose scanName in double quotes. For exampl : --scanName="Test Rel" or --scanName="Test>Rel".
 
-- Starting 1.2.1 release, the email notification setting for scans is obsolete. To learn more, see [Email notifications](https://help.hcl-software.com/appscan/ASoC/r_email_notifications.html).
+- Starting the 1.2.1 release, the email notification setting for scans is obsolete. To learn more, see [Email notifications](https://help.hcl-software.com/appscan/ASoC/r_email_notifications.html).
 Existing pipelines that pass --emailNotification=true or --emailNotification=false will continue to create scans; however the supplied value is ignored.
 ## License
 

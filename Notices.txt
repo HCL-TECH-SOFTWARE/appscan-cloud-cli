@@ -2,7 +2,7 @@
 Notices and Information
 -----------------------
 ----------------------------
-HCL AppScan Cloud CLI v1.2.1
+HCL AppScan Cloud CLI v1.3.0
 ----------------------------
 
 ======
@@ -11,13 +11,13 @@ DETAIL
 Note: generic licenses are marked with (*)
 Note: missing copyright references are marked with (*)
 ******************************************************
-1. Library: appscan.sdk-1.1.5.jar Product: AppScan AWS
+1. Library: appscan.sdk-1.1.12.jar Product: AppScan AWS
 ******************************************************
 ========
 LICENSES
 ========
 Licensed under Apache 2.0
-License terms can be found at: https://repo.maven.apache.org/maven2/com/hcl/appscan.sdk/1.1.5/appscan.sdk-1.1.5.pom
+License terms can be found at: https://repo.maven.apache.org/maven2/com/hcl/appscan.sdk/1.1.12/appscan.sdk-1.1.12.pom
 
 License Text Under Appendix
 
